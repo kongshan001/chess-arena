@@ -7,127 +7,548 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
             min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: #fff;
         }
-        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .subtitle { color: #888; margin-bottom: 2rem; }
+        .header {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .header h1 { font-size: 1.5rem; color: #ffd700; }
+        .header .gold { color: #ffd700; font-weight: bold; }
+        .game-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .board-section, .shop-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 16px;
+        }
         #game-board {
             display: grid;
-            grid-template-columns: repeat(8, 60px);
-            grid-template-rows: repeat(8, 60px);
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
             gap: 2px;
-            background: #2a2a4a;
-            padding: 8px;
+            background: #1a1a3a;
+            padding: 4px;
             border-radius: 8px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
         .cell {
-            width: 60px;
-            height: 60px;
-            background: #3a3a5a;
+            width: 50px;
+            height: 50px;
             border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
-            font-size: 2rem;
+            transition: all 0.15s;
+            font-size: 1.6rem;
+            position: relative;
         }
-        .cell:hover { background: #4a4a6a; transform: scale(1.05); }
-        .cell.light { background: #4a5568; }
-        .cell.dark { background: #2d3748; }
+        .cell:hover { transform: scale(1.1); z-index: 1; }
+        .cell.light { background: #3d5a80; }
+        .cell.dark { background: #293241; }
         .cell.selected { 
-            background: #4299e1; 
-            box-shadow: 0 0 20px #4299e1;
+            background: #e63946 !important;
+            box-shadow: 0 0 15px #e63946;
+        }
+        .cell.enemy { 
+            border: 2px solid #e63946;
+        }
+        .cell.friendly { 
+            border: 2px solid #4cc9f0;
         }
         .piece {
-            width: 50px;
-            height: 50px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            position: relative;
         }
-        .piece.warrior { background: linear-gradient(135deg, #3182ce, #2c5282); }
-        .piece.mage { background: linear-gradient(135deg, #805ad5, #6b46c1); }
-        .piece.archer { background: linear-gradient(135deg, #38a169, #2f855a); }
-        .piece.rogue { background: linear-gradient(135deg, #e53e3e, #c53030); }
-        .piece.healer { background: linear-gradient(135deg, #d69e2e, #b7791e); }
-        .piece.tank { background: linear-gradient(135deg, #718096, #4a5568); }
-        .info {
-            margin-top: 2rem;
-            padding: 1rem 2rem;
+        .piece.warrior { background: linear-gradient(135deg, #ff6b6b, #c0392b); }
+        .piece.mage { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+        .piece.archer { background: linear-gradient(135deg, #55efc4, #00b894); }
+        .piece.rogue { background: linear-gradient(135deg, #fd79a8, #e84393); }
+        .piece.healer { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); }
+        .piece.tank { background: linear-gradient(135deg, #636e72, #2d3436); }
+        .piece .hp-bar {
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 36px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .piece .hp-bar .hp {
+            height: 100%;
+            background: #2ecc71;
+            transition: width 0.3s;
+        }
+        .piece .level {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            font-size: 0.6rem;
+            background: #ffd700;
+            color: #000;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .shop-section h3 { margin-bottom: 12px; color: #4cc9f0; }
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 50px);
+            gap: 8px;
+        }
+        .shop-piece {
+            width: 50px;
+            height: 50px;
             background: rgba(255,255,255,0.1);
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
         }
-        .status { color: #48bb78; font-weight: bold; }
+        .shop-piece:hover { 
+            background: rgba(76, 201, 240, 0.3); 
+            transform: translateY(-4px);
+        }
+        .shop-piece .cost {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 0.7rem;
+            color: #ffd700;
+            background: rgba(0,0,0,0.5);
+            padding: 1px 4px;
+            border-radius: 4px;
+        }
+        .info-panel {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
+        .info-panel .round { color: #4cc9f0; font-size: 1.2rem; }
+        .info-panel .gold { color: #ffd700; font-size: 1.2rem; }
+        .controls { display: flex; gap: 8px; margin-top: 8px; }
+        .btn {
+            padding: 8px 16px;
+            background: #e63946;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn:hover { background: #ff6b6b; }
+        .btn.start { background: #2ecc71; }
+        .log {
+            margin-top: 12px;
+            padding: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #aaa;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .log .msg { margin: 4px 0; }
+        .log .msg.win { color: #2ecc71; }
+        .log .msg.damage { color: #e63946; }
+        @keyframes attack {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        .attacking { animation: attack 0.3s; }
     </style>
 </head>
 <body>
-    <h1>♟️ Chess Arena</h1>
-    <p class="subtitle">H5 自走棋策略竞技游戏</p>
-    <div id="game-board"></div>
-    <div class="info">
-        <p>状态: <span class="status">✅ 核心玩法验证中</span></p>
-        <p>MVP Demo - 2026-04-17</p>
+    <div class="header">
+        <h1>♟️ Chess Arena</h1>
+        <div>💰 <span class="gold" id="gold-display">10</span></div>
+    </div>
+    
+    <div class="game-container">
+        <div class="board-section">
+            <div id="game-board"></div>
+            <div class="info-panel">
+                <div>回合: <span class="round" id="round-display">1</span></div>
+                <div class="controls">
+                    <button class="btn start" onclick="startBattle()">⚔️ 开始战斗</button>
+                    <button class="btn" onclick="refreshShop()">🔄 刷新 (2💰)</button>
+                </div>
+                <div class="log" id="battle-log"></div>
+            </div>
+        </div>
+        
+        <div class="shop-section">
+            <h3>🏪 商店</h3>
+            <div class="shop-grid" id="shop-grid"></div>
+            <p style="font-size: 0.8rem; color: #888; margin-top: 8px;">
+                点击棋子 → 点击棋盘部署<br>
+                相邻棋子自动战斗
+            </p>
+        </div>
     </div>
 
     <script>
-        const board = document.getElementById('game-board');
-        const pieces = [
-            { pos: 0, type: 'warrior', emoji: '⚔️' },
-            { pos: 1, type: 'mage', emoji: '🔮' },
-            { pos: 2, type: 'archer', emoji: '🏹' },
-            { pos: 3, type: 'rogue', emoji: '🗡️' },
-            { pos: 4, type: 'healer', emoji: '💊' },
-            { pos: 5, type: 'mage', emoji: '🔮' },
-            { pos: 6, type: 'warrior', emoji: '⚔️' },
-            { pos: 7, type: 'tank', emoji: '🛡️' },
+        const BOARD_SIZE = 8;
+        const pieceTypes = [
+            { type: 'warrior', emoji: '⚔️', cost: 1, hp: 400, atk: 60, name: '战士' },
+            { type: 'mage', emoji: '🔮', cost: 2, hp: 250, atk: 80, name: '法师' },
+            { type: 'archer', emoji: '🏹', cost: 2, hp: 280, atk: 70, name: '弓箭手' },
+            { type: 'rogue', emoji: '🗡️', cost: 2, hp: 320, atk: 65, name: '盗贼' },
+            { type: 'healer', emoji: '💊', cost: 3, hp: 200, atk: 40, name: '治疗师' },
+            { type: 'tank', emoji: '🛡️', cost: 1, hp: 600, atk: 40, name: '守卫' },
         ];
-
-        let selected = null;
-
-        // Create 8x8 board
-        for (let i = 0; i < 64; i++) {
-            const row = Math.floor(i / 8);
-            const col = i % 8;
-            const cell = document.createElement('div');
-            cell.className = `cell ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
-            cell.dataset.index = i;
+        
+        let board = [];
+        let gold = 10;
+        let round = 1;
+        let selectedPiece = null;
+        let selectedShopIndex = null;
+        let shopPieces = [];
+        let battleLog = [];
+        
+        // 初始化棋盘
+        function initBoard() {
+            const boardEl = document.getElementById('game-board');
+            boardEl.innerHTML = '';
+            board = Array(BOARD_SIZE * BOARD_SIZE).fill(null);
             
-            const piece = pieces.find(p => p.pos === i);
+            for (let i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+                const row = Math.floor(i / 8);
+                const col = i % 8;
+                const cell = document.createElement('div');
+                cell.className = `cell ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+                cell.dataset.index = i;
+                cell.onclick = () => onCellClick(i);
+                boardEl.appendChild(cell);
+            }
+            
+            // 初始敌人
+            spawnEnemy(0, 'tank', 35);
+            spawnEnemy(1, 'archer', 36);
+            spawnEnemy(2, 'mage', 44);
+            spawnEnemy(3, 'warrior', 51);
+        }
+        
+        // 生成敌人
+        function spawnEnemy(index, type, pos) {
+            const piece = pieceTypes.find(p => p.type === type);
+            const hpPercent = 100;
+            const level = Math.floor(Math.random() * 3) + 1;
+            
+            board[pos] = { 
+                type, 
+                hp: piece.hp * level, 
+                maxHp: piece.hp * level,
+                atk: piece.atk * level,
+                level,
+                isEnemy: true,
+                emoji: piece.emoji
+            };
+            
+            renderCell(pos);
+            updateLog(`${piece.name} Lv.${level} 出现!`, 'damage');
+        }
+        
+        // 初始化商店
+        function refreshShop() {
+            if (gold < 2) {
+                alert('金币不足!');
+                return;
+            }
+            gold -= 2;
+            updateGold();
+            
+            const shopEl = document.getElementById('shop-grid');
+            shopEl.innerHTML = '';
+            shopPieces = [];
+            
+            for (let i = 0; i < 5; i++) {
+                const type = pieceTypes[Math.floor(Math.random() * pieceTypes.length)];
+                shopPieces.push(type);
+                
+                const pieceEl = document.createElement('div');
+                pieceEl.className = 'shop-piece';
+                pieceEl.innerHTML = `${type.emoji}<span class="cost">${type.cost}</span>`;
+                pieceEl.onclick = () => selectShopPiece(i);
+                shopEl.appendChild(pieceEl);
+            }
+            
+            updateLog('刷新了商店', 'msg');
+        }
+        
+        // 选择商店棋子
+        function selectShopPiece(index) {
+            const type = shopPieces[index];
+            if (gold < type.cost) {
+                alert('金币不足!');
+                return;
+            }
+            selectedShopIndex = index;
+            
+            // 高亮选中
+            document.querySelectorAll('.shop-piece').forEach((el, i) => {
+                el.style.border = i === index ? '2px solid #4cc9f0' : 'none';
+            });
+            
+            updateLog(`选择了 ${type.name}`, 'msg');
+        }
+        
+        // 点击棋盘格子
+        function onCellClick(index) {
+            if (selectedShopIndex !== null) {
+                // 部署棋子
+                if (board[index] !== null) {
+                    alert('已经有棋子了!');
+                    return;
+                }
+                
+                const type = shopPieces[selectedShopIndex];
+                const emptySlots = board.filter((p, i) => p === null && i < 32).length;
+                if (index >= 32) {
+                    alert('只能在己方区域部署!');
+                    return;
+                }
+                
+                board[index] = {
+                    type: type.type,
+                    hp: type.hp,
+                    maxHp: type.hp,
+                    atk: type.atk,
+                    level: 1,
+                    isEnemy: false,
+                    emoji: type.emoji
+                };
+                
+                gold -= type.cost;
+                updateGold();
+                renderCell(index);
+                updateLog(`部署了 ${type.name}`, 'msg');
+                updateLog(`剩余金币: ${gold}`, 'msg');
+                
+                selectedShopIndex = null;
+                document.querySelectorAll('.shop-piece').forEach(el => el.style.border = 'none');
+            } else if (board[index]) {
+                // 选中己方棋子
+                if (board[index]?.isEnemy) return;
+                
+                document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
+                document.querySelector(`[data-index="${index}"]`).classList.add('selected');
+                selectedPiece = index;
+            }
+        }
+        
+        // 渲染格子
+        function renderCell(index) {
+            const cell = document.querySelector(`[data-index="${index}"]`);
+            const piece = board[index];
+            
+            cell.innerHTML = '';
+            cell.classList.remove('enemy', 'friendly');
+            
             if (piece) {
+                if (piece.isEnemy) cell.classList.add('enemy');
+                else cell.classList.add('friendly');
+                
                 const pieceEl = document.createElement('div');
                 pieceEl.className = `piece ${piece.type}`;
-                pieceEl.textContent = piece.emoji;
+                pieceEl.innerHTML = piece.emoji;
+                pieceEl.id = `piece-${index}`;
+                
+                // 血条
+                const hpBar = document.createElement('div');
+                hpBar.className = 'hp-bar';
+                const hpPercent = (piece.hp / piece.maxHp) * 100;
+                hpBar.innerHTML = `<div class="hp" style="width:${hpPercent}%"></div>`;
+                pieceEl.appendChild(hpBar);
+                
+                // 等级
+                if (piece.level > 1) {
+                    const levelEl = document.createElement('div');
+                    levelEl.className = 'level';
+                    levelEl.textContent = piece.level;
+                    pieceEl.appendChild(levelEl);
+                }
+                
                 cell.appendChild(pieceEl);
             }
-
-            cell.addEventListener('click', () => {
-                if (selected !== null) {
-                    document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-                }
-                cell.classList.add('selected');
-                selected = i;
-            });
-
-            board.appendChild(cell);
         }
-
-        // Simple test
-        console.log('✅ Chess Arena MVP Demo Loaded');
-        console.log('✅ Board rendered: 64 cells');
-        console.log('✅ Pieces placed: 8 units');
+        
+        // 更新金币显示
+        function updateGold() {
+            document.getElementById('gold-display').textContent = gold;
+        }
+        
+        // 更新日志
+        function updateLog(msg, type = 'msg') {
+            const logEl = document.getElementById('battle-log');
+            logEl.innerHTML = `<div class="msg ${type}">${msg}</div>` + logEl.innerHTML;
+        }
+        
+        // 开始战斗
+        function startBattle() {
+            const friendlyPieces = board.filter(p => p && !p.isEnemy);
+            const enemyPieces = board.filter(p => p && p.isEnemy);
+            
+            if (friendlyPieces.length === 0) {
+                alert('请先部署棋子!');
+                return;
+            }
+            
+            if (enemyPieces.length === 0) {
+                alert('等待敌人出现...');
+                spawnEnemies();
+                return;
+            }
+            
+            // 自动战斗
+            battleLoop();
+        }
+        
+        // 生成敌人
+        function spawnEnemies() {
+            const types = ['tank', 'warrior', 'archer', 'mage'];
+            for (let i = 0; i < 4; i++) {
+                const pos = 35 + Math.floor(Math.random() * 25);
+                if (board[pos] === null) {
+                    spawnEnemy(i, types[i], pos);
+                }
+            }
+            updateLog(`敌人已部署!`, 'damage');
+        }
+        
+        // 战斗循环
+        function battleLoop() {
+            let turns = 0;
+            const interval = setInterval(() => {
+                turns++;
+                
+                // 找出所有相邻的棋子对
+                const pairs = [];
+                for (let i = 0; i < board.length; i++) {
+                    if (!board[i] || board[i].isEnemy) continue;
+                    
+                    const neighbors = getNeighbors(i);
+                    for (const n of neighbors) {
+                        if (board[n] && board[n].isEnemy) {
+                            pairs.push([i, n]);
+                        }
+                    }
+                }
+                
+                if (pairs.length === 0) {
+                    clearInterval(interval);
+                    
+                    // 生成新敌人
+                    if (turns > 5) {
+                        round++;
+                        document.getElementById('round-display').textContent = round;
+                        gold += 2 + Math.floor(round / 3);
+                        updateGold();
+                        spawnEnemies();
+                        updateLog(`回合 ${round} - 获得 ${2 + Math.floor(round / 3)} 金币`, 'win');
+                    }
+                    return;
+                }
+                
+                // 战斗
+                for (const [attackerPos, defenderPos] of pairs) {
+                    const attacker = board[attackerPos];
+                    const defender = board[defenderPos];
+                    
+                    if (attacker && defender && attacker.hp > 0 && defender.hp > 0) {
+                        // 攻击
+                        defender.hp -= attacker.atk;
+                        
+                        // 动画
+                        const pieceEl = document.getElementById(`piece-${attackerPos}`);
+                        if (pieceEl) {
+                            pieceEl.classList.add('attacking');
+                            setTimeout(() => pieceEl.classList.remove('attacking'), 300);
+                        }
+                        
+                        updateLog(`${attacker.emoji} 攻击! 造成 ${attacker.atk} 伤害`, 'damage');
+                        
+                        // 死亡
+                        if (defender.hp <= 0) {
+                            board[defenderPos] = null;
+                            renderCell(defenderPos);
+                            
+                            if (defender.isEnemy) {
+                                gold += defender.level;
+                                updateGold();
+                                updateLog(`击败敌人! +${defender.level} 金币`, 'win');
+                            }
+                        } else {
+                            renderCell(defenderPos);
+                        }
+                    }
+                }
+                
+                if (turns > 20) clearInterval(interval);
+            }, 800);
+        }
+        
+        // 获取相邻格子
+        function getNeighbors(index) {
+            const row = Math.floor(index / 8);
+            const col = index % 8;
+            const neighbors = [];
+            
+            const dirs = [[-1,0], [1,0], [0,-1], [0,1]];
+            for (const [dr, dc] of dirs) {
+                const nr = row + dr, nc = col + dc;
+                if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+                    neighbors.push(nr * 8 + nc);
+                }
+            }
+            return neighbors;
+        }
+        
+        // 初始化
+        initBoard();
+        refreshShop();
+        updateLog('欢迎来到 Chess Arena!', 'win');
+        updateLog('点击商店棋子，再点击棋盘部署', 'msg');
+        
+        // 测试
+        console.log('✅ Chess Arena Ready');
     </script>
 </body>
 </html>
