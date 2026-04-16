@@ -3,552 +3,713 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Arena - 棋阵</title>
+    <title>Chess Arena - 棋阵 (MVP)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
             min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Microsoft YaHei', system-ui, sans-serif;
             color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
         .header {
-            width: 100%;
             padding: 1rem 2rem;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.5);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid #333;
         }
-        .header h1 { font-size: 1.5rem; color: #ffd700; }
-        .header .gold { color: #ffd700; font-weight: bold; }
-        .game-container {
+        .header h1 { color: #ffd700; font-size: 1.4rem; }
+        .stats { display: flex; gap: 20px; font-size: 1.1rem; }
+        .stats .gold { color: #ffd700; }
+        .stats .round { color: #4cc9f0; }
+        .stats .score { color: #2ecc71; }
+        
+        .main {
             display: flex;
-            gap: 20px;
-            padding: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .board-section, .shop-section {
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
+            gap: 16px;
             padding: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
-        #game-board {
+        
+        /* 游戏棋盘 */
+        .board-box {
+            background: #1a1a2e;
+            padding: 8px;
+            border-radius: 12px;
+            border: 2px solid #333;
+        }
+        #board {
             display: grid;
-            grid-template-columns: repeat(8, 50px);
-            grid-template-rows: repeat(8, 50px);
+            grid-template-columns: repeat(8, 54px);
+            grid-template-rows: repeat(8, 54px);
             gap: 2px;
-            background: #1a1a3a;
-            padding: 4px;
-            border-radius: 8px;
+            background: #111;
         }
         .cell {
-            width: 50px;
-            height: 50px;
-            border-radius: 4px;
+            width: 54px;
+            height: 54px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.15s;
-            font-size: 1.6rem;
             position: relative;
+            font-size: 2rem;
+            border-radius: 4px;
         }
-        .cell:hover { transform: scale(1.1); z-index: 1; }
-        .cell.light { background: #3d5a80; }
-        .cell.dark { background: #293241; }
+        .cell.light { background: #2d4a6e; }
+        .cell.dark { background: #1e2d4a; }
+        .cell:hover { filter: brightness(1.2); }
+        .cell.my { border: 2px solid #4cc9f0; }
+        .cell.enemy { border: 2px solid #e63946; }
         .cell.selected { 
-            background: #e63946 !important;
-            box-shadow: 0 0 15px #e63946;
+            background: #ffd700 !important; 
+            box-shadow: 0 0 20px #ffd700;
         }
-        .cell.enemy { 
-            border: 2px solid #e63946;
-        }
-        .cell.friendly { 
-            border: 2px solid #4cc9f0;
-        }
+        
         .piece {
-            width: 42px;
-            height: 42px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            font-size: 1.8rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
             position: relative;
         }
-        .piece.warrior { background: linear-gradient(135deg, #ff6b6b, #c0392b); }
-        .piece.mage { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
-        .piece.archer { background: linear-gradient(135deg, #55efc4, #00b894); }
-        .piece.rogue { background: linear-gradient(135deg, #fd79a8, #e84393); }
-        .piece.healer { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); }
-        .piece.tank { background: linear-gradient(135deg, #636e72, #2d3436); }
-        .piece .hp-bar {
+        .piece.warrior { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .piece.mage { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .piece.archer { background: linear-gradient(135deg, #1abc9c, #16a085); }
+        .piece.rogue { background: linear-gradient(135deg, #e91e63, #c2185b); }
+        .piece.healer { background: linear-gradient(135deg, #ffc107, #ff8f00); }
+        .piece.tank { background: linear-gradient(135deg, #607d8b, #455a64); }
+        .piece.knight { background: linear-gradient(135deg, #3498db, #2980b9); }
+        
+        .hp-bar {
             position: absolute;
-            bottom: -4px;
+            bottom: -6px;
             left: 50%;
             transform: translateX(-50%);
-            width: 36px;
-            height: 4px;
+            width: 40px;
+            height: 5px;
             background: #333;
-            border-radius: 2px;
+            border-radius: 3px;
             overflow: hidden;
         }
-        .piece .hp-bar .hp {
-            height: 100%;
-            background: #2ecc71;
-            transition: width 0.3s;
+        .hp-bar .hp { 
+            height: 100%; 
+            background: #2ecc71; 
+            transition: width 0.2s;
         }
-        .piece .level {
+        .hp-bar .hp.low { background: #e74c3c; }
+        
+        .level-badge {
             position: absolute;
             top: -4px;
             right: -4px;
-            font-size: 0.6rem;
-            background: #ffd700;
-            color: #000;
             width: 16px;
             height: 16px;
+            background: #ffd700;
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: bold;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
         }
-        .shop-section h3 { margin-bottom: 12px; color: #4cc9f0; }
+        
+        /* 商店 */
+        .shop-box {
+            background: #1a1a2e;
+            padding: 16px;
+            border-radius: 12px;
+            min-width: 300px;
+            border: 2px solid #333;
+        }
+        .shop-box h3 { 
+            color: #4cc9f0; 
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
         .shop-grid {
             display: grid;
-            grid-template-columns: repeat(5, 50px);
+            grid-template-columns: repeat(3, 1fr);
             gap: 8px;
         }
-        .shop-piece {
-            width: 50px;
-            height: 50px;
-            background: rgba(255,255,255,0.1);
+        .shop-item {
+            background: #2a2a4e;
+            padding: 12px 8px;
             border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 2px solid transparent;
+        }
+        .shop-item:hover { 
+            background: #3a3a6e; 
+            transform: translateY(-4px);
+        }
+        .shop-item.selected { 
+            border-color: #ffd700;
+            box-shadow: 0 0 15px #ffd700;
+        }
+        .shop-item .icon { font-size: 1.8rem; }
+        .shop-item .name { font-size: 0.8rem; margin: 4px 0; }
+        .shop-item .cost { color: #ffd700; font-size: 0.9rem; }
+        
+        /* 控制区 */
+        .controls {
+            margin-top: 16px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+            transition: all 0.15s;
+        }
+        .btn:hover { filter: brightness(1.2); transform: scale(1.02); }
+        .btn-start { background: #27ae60; }
+        .btn-refresh { background: #3498db; }
+        .btn-sell { background: #9b59b6; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* 日志 */
+        .log-box {
+            background: #111;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 16px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            border: 1px solid #333;
+        }
+        .log-box .log { margin: 4px 0; color: #888; }
+        .log-box .log.win { color: #2ecc71; }
+        .log-box .log.dmg { color: #e74c3c; }
+        .log-box .log.info { color: #4cc9f0; }
+        
+        /* 伤害飘字 */
+        @keyframes dmg {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-30px); opacity: 0; }
+        }
+        .dmg-text {
+            position: absolute;
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px #000;
+            animation: dmg 0.8s forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        /* 结束界面 */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6rem;
-            cursor: pointer;
-            transition: all 0.15s;
-            position: relative;
+            z-index: 1000;
         }
-        .shop-piece:hover { 
-            background: rgba(76, 201, 240, 0.3); 
-            transform: translateY(-4px);
+        .modal-content {
+            background: #1a1a2e;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            border: 3px solid #ffd700;
         }
-        .shop-piece .cost {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            font-size: 0.7rem;
-            color: #ffd700;
-            background: rgba(0,0,0,0.5);
-            padding: 1px 4px;
-            border-radius: 4px;
-        }
-        .info-panel {
-            margin-top: 16px;
-            padding: 12px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-        }
-        .info-panel .round { color: #4cc9f0; font-size: 1.2rem; }
-        .info-panel .gold { color: #ffd700; font-size: 1.2rem; }
-        .controls { display: flex; gap: 8px; margin-top: 8px; }
-        .btn {
-            padding: 8px 16px;
-            background: #e63946;
-            border: none;
-            border-radius: 6px;
-            color: #fff;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn:hover { background: #ff6b6b; }
-        .btn.start { background: #2ecc71; }
-        .log {
-            margin-top: 12px;
-            padding: 8px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            font-size: 0.8rem;
-            color: #aaa;
-            max-height: 100px;
-            overflow-y: auto;
-        }
-        .log .msg { margin: 4px 0; }
-        .log .msg.win { color: #2ecc71; }
-        .log .msg.damage { color: #e63946; }
-        @keyframes attack {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-        }
-        .attacking { animation: attack 0.3s; }
+        .modal-content h2 { color: #ffd700; font-size: 2rem; margin-bottom: 16px; }
+        .modal-content .score { font-size: 3rem; color: #2ecc71; margin: 20px 0; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>♟️ Chess Arena</h1>
-        <div>💰 <span class="gold" id="gold-display">10</span></div>
+        <div class="stats">
+            <span>💰 <span class="gold" id="gold">10</span></span>
+            <span>回合: <span class="round" id="round">1</span></span>
+            <span>得分: <span class="score" id="score">0</span></span>
+        </div>
     </div>
     
-    <div class="game-container">
-        <div class="board-section">
-            <div id="game-board"></div>
-            <div class="info-panel">
-                <div>回合: <span class="round" id="round-display">1</span></div>
-                <div class="controls">
-                    <button class="btn start" onclick="startBattle()">⚔️ 开始战斗</button>
-                    <button class="btn" onclick="refreshShop()">🔄 刷新 (2💰)</button>
-                </div>
-                <div class="log" id="battle-log"></div>
-            </div>
+    <div class="main">
+        <div class="board-box">
+            <div id="board"></div>
         </div>
         
-        <div class="shop-section">
-            <h3>🏪 商店</h3>
-            <div class="shop-grid" id="shop-grid"></div>
-            <p style="font-size: 0.8rem; color: #888; margin-top: 8px;">
-                点击棋子 → 点击棋盘部署<br>
-                相邻棋子自动战斗
-            </p>
+        <div class="shop-box">
+            <h3>🏪 棋子商店</h3>
+            <div class="shop-grid" id="shop"></div>
+            
+            <div class="controls">
+                <button class="btn btn-start" onclick="startBattle()">⚔️ 开始战斗</button>
+                <button class="btn btn-refresh" onclick="refreshShop()">🔄 刷新 (2💰)</button>
+                <button class="btn btn-sell" onclick="sellPiece()">💰 出售</button>
+            </div>
+            
+            <div class="log-box" id="log"></div>
+        </div>
+    </div>
+    
+    <div class="modal hidden" id="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">游戏结束</h2>
+            <p>最终得分</p>
+            <div class="score" id="modal-score">0</div>
+            <button class="btn btn-start" onclick="restart()">🔄 再来一局</button>
         </div>
     </div>
 
     <script>
-        const BOARD_SIZE = 8;
-        const pieceTypes = [
-            { type: 'warrior', emoji: '⚔️', cost: 1, hp: 400, atk: 60, name: '战士' },
-            { type: 'mage', emoji: '🔮', cost: 2, hp: 250, atk: 80, name: '法师' },
-            { type: 'archer', emoji: '🏹', cost: 2, hp: 280, atk: 70, name: '弓箭手' },
-            { type: 'rogue', emoji: '🗡️', cost: 2, hp: 320, atk: 65, name: '盗贼' },
-            { type: 'healer', emoji: '💊', cost: 3, hp: 200, atk: 40, name: '治疗师' },
-            { type: 'tank', emoji: '🛡️', cost: 1, hp: 600, atk: 40, name: '守卫' },
-        ];
+        // ============ 核心数据 ============
+        const PIECES = {
+            warrior: { name: '战士', icon: '⚔️', cost: 1, hp: 400, atk: 50, range: 1 },
+            mage: { name: '法师', icon: '🔮', cost: 2, hp: 250, atk: 70, range: 3 },
+            archer: { name: '弓箭手', icon: '🏹', cost: 2, hp: 280, atk: 60, range: 2 },
+            rogue: { name: '盗贼', icon: '🗡️', cost: 2, hp: 300, atk: 55, range: 1 },
+            healer: { name: '治疗师', icon: '💊', cost: 3, hp: 200, atk: 35, range: 2 },
+            tank: { name: '守卫', icon: '🛡️', cost: 1, hp: 550, atk: 35, range: 1 },
+            knight: { name: '骑士', icon: '🐴', cost: 2, hp: 400, atk: 45, range: 1 }
+        };
         
+        const BOARD_SIZE = 8;
         let board = [];
         let gold = 10;
         let round = 1;
-        let selectedPiece = null;
-        let selectedShopIndex = null;
-        let shopPieces = [];
-        let battleLog = [];
+        let score = 0;
+        let selected = null;
+        let shopItems = [];
+        let gameOver = false;
+        let inBattle = false;
         
-        // 初始化棋盘
-        function initBoard() {
-            const boardEl = document.getElementById('game-board');
-            boardEl.innerHTML = '';
-            board = Array(BOARD_SIZE * BOARD_SIZE).fill(null);
+        // ============ 初始化 ============
+        function init() {
+            board = Array(64).fill(null);
+            gold = 10;
+            round = 1;
+            score = 0;
+            gameOver = false;
+            inBattle = false;
+            selected = null;
             
-            for (let i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+            renderBoard();
+            refreshShop();
+            spawnEnemies(4);
+            updateUI();
+            log('欢迎! 点击商店棋子，再点击蓝色区域部署', 'info');
+        }
+        
+        // ============ 渲染棋盘 ============
+        function renderBoard() {
+            const el = document.getElementById('board');
+            el.innerHTML = '';
+            
+            for (let i = 0; i < 64; i++) {
                 const row = Math.floor(i / 8);
                 const col = i % 8;
                 const cell = document.createElement('div');
                 cell.className = `cell ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
-                cell.dataset.index = i;
-                cell.onclick = () => onCellClick(i);
-                boardEl.appendChild(cell);
-            }
-            
-            // 初始敌人
-            spawnEnemy(0, 'tank', 35);
-            spawnEnemy(1, 'archer', 36);
-            spawnEnemy(2, 'mage', 44);
-            spawnEnemy(3, 'warrior', 51);
-        }
-        
-        // 生成敌人
-        function spawnEnemy(index, type, pos) {
-            const piece = pieceTypes.find(p => p.type === type);
-            const hpPercent = 100;
-            const level = Math.floor(Math.random() * 3) + 1;
-            
-            board[pos] = { 
-                type, 
-                hp: piece.hp * level, 
-                maxHp: piece.hp * level,
-                atk: piece.atk * level,
-                level,
-                isEnemy: true,
-                emoji: piece.emoji
-            };
-            
-            renderCell(pos);
-            updateLog(`${piece.name} Lv.${level} 出现!`, 'damage');
-        }
-        
-        // 初始化商店
-        function refreshShop() {
-            if (gold < 2) {
-                alert('金币不足!');
-                return;
-            }
-            gold -= 2;
-            updateGold();
-            
-            const shopEl = document.getElementById('shop-grid');
-            shopEl.innerHTML = '';
-            shopPieces = [];
-            
-            for (let i = 0; i < 5; i++) {
-                const type = pieceTypes[Math.floor(Math.random() * pieceTypes.length)];
-                shopPieces.push(type);
+                cell.style.position = 'relative';
                 
-                const pieceEl = document.createElement('div');
-                pieceEl.className = 'shop-piece';
-                pieceEl.innerHTML = `${type.emoji}<span class="cost">${type.cost}</span>`;
-                pieceEl.onclick = () => selectShopPiece(i);
-                shopEl.appendChild(pieceEl);
+                // 阵营标记
+                if (i < 32) cell.classList.add('my');
+                if (board[i] && board[i].isEnemy) cell.classList.add('enemy');
+                
+                cell.onclick = () => clickCell(i);
+                cell.id = `cell-${i}`;
+                
+                // 棋子
+                const p = board[i];
+                if (p) {
+                    const piece = document.createElement('div');
+                    piece.className = `piece ${p.type}`;
+                    piece.textContent = p.icon;
+                    
+                    // 血条
+                    const hpBar = document.createElement('div');
+                    hpBar.className = 'hp-bar';
+                    const hpPct = (p.hp / p.maxHp) * 100;
+                    hpBar.innerHTML = `<div class="hp ${hpPct < 30 ? 'low' : ''}" style="width:${hpPct}%"></div>`;
+                    piece.appendChild(hpBar);
+                    
+                    // 等级
+                    if (p.level > 1) {
+                        const lv = document.createElement('div');
+                        lv.className = 'level-badge';
+                        lv.textContent = p.level;
+                        piece.appendChild(lv);
+                    }
+                    
+                    cell.appendChild(piece);
+                }
+                
+                el.appendChild(cell);
             }
-            
-            updateLog('刷新了商店', 'msg');
         }
         
-        // 选择商店棋子
-        function selectShopPiece(index) {
-            const type = shopPieces[index];
-            if (gold < type.cost) {
-                alert('金币不足!');
+        // ============ 渲染商店 ============
+        function refreshShop() {
+            const el = document.getElementById('shop');
+            el.innerHTML = '';
+            shopItems = [];
+            
+            for (let i = 0; i < 6; i++) {
+                const types = Object.keys(PIECES);
+                const type = types[Math.floor(Math.random() * types.length)];
+                const data = PIECES[type];
+                shopItems.push({ type, ...data });
+                
+                const item = document.createElement('div');
+                item.className = 'shop-item';
+                item.innerHTML = `
+                    <div class="icon">${data.icon}</div>
+                    <div class="name">${data.name}</div>
+                    <div class="cost">💰${data.cost}</div>
+                `;
+                item.onclick = () => selectShop(i);
+                el.appendChild(item);
+            }
+        }
+        
+        // ============ 商店选择 ============
+        function selectShop(index) {
+            if (inBattle) return;
+            
+            const item = shopItems[index];
+            if (gold < item.cost) {
+                log('金币不足!', 'dmg');
                 return;
             }
-            selectedShopIndex = index;
             
-            // 高亮选中
-            document.querySelectorAll('.shop-piece').forEach((el, i) => {
-                el.style.border = i === index ? '2px solid #4cc9f0' : 'none';
+            document.querySelectorAll('.shop-item').forEach((el, i) => {
+                el.classList.toggle('selected', i === index);
             });
             
-            updateLog(`选择了 ${type.name}`, 'msg');
+            selected = { type: 'shop', index };
+            log(`选择 ${item.name}，点击蓝色区域部署`, 'info');
         }
         
-        // 点击棋盘格子
-        function onCellClick(index) {
-            if (selectedShopIndex !== null) {
+        // ============ 点击棋盘 ============
+        function clickCell(index) {
+            if (gameOver || inBattle) return;
+            
+            const p = board[index];
+            
+            if (selected?.type === 'shop') {
                 // 部署棋子
-                if (board[index] !== null) {
-                    alert('已经有棋子了!');
-                    return;
-                }
-                
-                const type = shopPieces[selectedShopIndex];
-                const emptySlots = board.filter((p, i) => p === null && i < 32).length;
                 if (index >= 32) {
-                    alert('只能在己方区域部署!');
+                    log('只能在蓝色区域部署!', 'dmg');
+                    return;
+                }
+                if (p) {
+                    log('已有棋子!', 'dmg');
                     return;
                 }
                 
-                board[index] = {
-                    type: type.type,
-                    hp: type.hp,
-                    maxHp: type.hp,
-                    atk: type.atk,
+                const item = shopItems[selected.index];
+                const newPiece = {
+                    type: item.type,
+                    icon: item.icon,
+                    hp: item.hp,
+                    maxHp: item.hp,
+                    atk: item.atk,
                     level: 1,
-                    isEnemy: false,
-                    emoji: type.emoji
+                    isEnemy: false
                 };
                 
-                gold -= type.cost;
-                updateGold();
-                renderCell(index);
-                updateLog(`部署了 ${type.name}`, 'msg');
-                updateLog(`剩余金币: ${gold}`, 'msg');
+                board[index] = newPiece;
+                gold -= item.cost;
+                renderBoard();
+                updateUI();
+                log(`部署 ${item.name}`, 'win');
                 
-                selectedShopIndex = null;
-                document.querySelectorAll('.shop-piece').forEach(el => el.style.border = 'none');
-            } else if (board[index]) {
+                selected = null;
+                document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
+            } else if (p && !p.isEnemy) {
                 // 选中己方棋子
-                if (board[index]?.isEnemy) return;
-                
-                document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-                document.querySelector(`[data-index="${index}"]`).classList.add('selected');
-                selectedPiece = index;
+                document.querySelectorAll('.cell').forEach(el => el.classList.remove('selected'));
+                document.getElementById(`cell-${index}`).classList.add('selected');
+                selected = { type: 'board', index };
+                log(`选中 ${PIECES[p.type].name} Lv.${p.level}`, 'info');
             }
         }
         
-        // 渲染格子
-        function renderCell(index) {
-            const cell = document.querySelector(`[data-index="${index}"]`);
-            const piece = board[index];
-            
-            cell.innerHTML = '';
-            cell.classList.remove('enemy', 'friendly');
-            
-            if (piece) {
-                if (piece.isEnemy) cell.classList.add('enemy');
-                else cell.classList.add('friendly');
-                
-                const pieceEl = document.createElement('div');
-                pieceEl.className = `piece ${piece.type}`;
-                pieceEl.innerHTML = piece.emoji;
-                pieceEl.id = `piece-${index}`;
-                
-                // 血条
-                const hpBar = document.createElement('div');
-                hpBar.className = 'hp-bar';
-                const hpPercent = (piece.hp / piece.maxHp) * 100;
-                hpBar.innerHTML = `<div class="hp" style="width:${hpPercent}%"></div>`;
-                pieceEl.appendChild(hpBar);
-                
-                // 等级
-                if (piece.level > 1) {
-                    const levelEl = document.createElement('div');
-                    levelEl.className = 'level';
-                    levelEl.textContent = piece.level;
-                    pieceEl.appendChild(levelEl);
-                }
-                
-                cell.appendChild(pieceEl);
+        // ============ 出售棋子 ============
+        function sellPiece() {
+            if (selected?.type !== 'board') {
+                log('先选中棋子', 'dmg');
+                return;
             }
+            
+            const p = board[selected.index];
+            if (!p || p.isEnemy) return;
+            
+            const refund = Math.floor(PIECES[p.type].cost * p.level * 0.8);
+            gold += refund;
+            board[selected.index] = null;
+            selected = null;
+            
+            renderBoard();
+            updateUI();
+            log(`出售获得 💰${refund}`, 'win');
         }
         
-        // 更新金币显示
-        function updateGold() {
-            document.getElementById('gold-display').textContent = gold;
-        }
-        
-        // 更新日志
-        function updateLog(msg, type = 'msg') {
-            const logEl = document.getElementById('battle-log');
-            logEl.innerHTML = `<div class="msg ${type}">${msg}</div>` + logEl.innerHTML;
-        }
-        
-        // 开始战斗
+        // ============ 战斗系统 ============
         function startBattle() {
-            const friendlyPieces = board.filter(p => p && !p.isEnemy);
-            const enemyPieces = board.filter(p => p && p.isEnemy);
-            
-            if (friendlyPieces.length === 0) {
-                alert('请先部署棋子!');
+            const myPieces = board.filter(p => p && !p.isEnemy);
+            if (myPieces.length === 0) {
+                log('需要部署棋子!', 'dmg');
                 return;
             }
             
-            if (enemyPieces.length === 0) {
-                alert('等待敌人出现...');
-                spawnEnemies();
-                return;
-            }
-            
-            // 自动战斗
+            inBattle = true;
+            log('⚔️ 战斗开始!', 'win');
             battleLoop();
         }
         
-        // 生成敌人
-        function spawnEnemies() {
-            const types = ['tank', 'warrior', 'archer', 'mage'];
-            for (let i = 0; i < 4; i++) {
-                const pos = 35 + Math.floor(Math.random() * 25);
-                if (board[pos] === null) {
-                    spawnEnemy(i, types[i], pos);
-                }
-            }
-            updateLog(`敌人已部署!`, 'damage');
-        }
-        
-        // 战斗循环
         function battleLoop() {
-            let turns = 0;
-            const interval = setInterval(() => {
-                turns++;
+            let battleTicks = 0;
+            const maxTicks = 30;
+            
+            const tick = () => {
+                if (gameOver) return;
+                battleTicks++;
                 
-                // 找出所有相邻的棋子对
+                // 寻找可战斗的对
                 const pairs = [];
-                for (let i = 0; i < board.length; i++) {
-                    if (!board[i] || board[i].isEnemy) continue;
+                for (let i = 0; i < 64; i++) {
+                    const attacker = board[i];
+                    if (!attacker || attacker.isEnemy) continue;
                     
-                    const neighbors = getNeighbors(i);
+                    const neighbors = getRangeCells(i, 1);
                     for (const n of neighbors) {
-                        if (board[n] && board[n].isEnemy) {
+                        const defender = board[n];
+                        if (defender && defender.isEnemy) {
                             pairs.push([i, n]);
                         }
                     }
                 }
                 
-                if (pairs.length === 0) {
-                    clearInterval(interval);
-                    
-                    // 生成新敌人
-                    if (turns > 5) {
-                        round++;
-                        document.getElementById('round-display').textContent = round;
-                        gold += 2 + Math.floor(round / 3);
-                        updateGold();
-                        spawnEnemies();
-                        updateLog(`回合 ${round} - 获得 ${2 + Math.floor(round / 3)} 金币`, 'win');
-                    }
+                if (pairs.length === 0 || battleTicks >= maxTicks) {
+                    inBattle = false;
+                    endBattle();
                     return;
                 }
                 
-                // 战斗
-                for (const [attackerPos, defenderPos] of pairs) {
-                    const attacker = board[attackerPos];
-                    const defender = board[defenderPos];
+                // 执行战斗
+                for (const [atkIdx, defIdx] of pairs) {
+                    const attacker = board[atkIdx];
+                    const defender = board[defIdx];
                     
-                    if (attacker && defender && attacker.hp > 0 && defender.hp > 0) {
-                        // 攻击
-                        defender.hp -= attacker.atk;
-                        
-                        // 动画
-                        const pieceEl = document.getElementById(`piece-${attackerPos}`);
-                        if (pieceEl) {
-                            pieceEl.classList.add('attacking');
-                            setTimeout(() => pieceEl.classList.remove('attacking'), 300);
+                    if (!attacker || !defender) continue;
+                    
+                    // 攻击
+                    defender.hp -= attacker.atk;
+                    showDmg(defIdx, `-${attacker.atk}`);
+                    renderCell(defIdx);
+                    
+                    // 治疗师特殊效果
+                    if (attacker.type === 'healer') {
+                        const allies = getRangeCells(atkIdx, 2).map(i => board[i]).filter(p => p && !p.isEnemy);
+                        if (allies.length > 0) {
+                            const target = allies[Math.floor(Math.random() * allies.length)];
+                            target.hp = Math.min(target.hp + 20, target.maxHp);
+                            renderCell(atkIdx);
                         }
-                        
-                        updateLog(`${attacker.emoji} 攻击! 造成 ${attacker.atk} 伤害`, 'damage');
-                        
-                        // 死亡
-                        if (defender.hp <= 0) {
-                            board[defenderPos] = null;
-                            renderCell(defenderPos);
-                            
-                            if (defender.isEnemy) {
-                                gold += defender.level;
-                                updateGold();
-                                updateLog(`击败敌人! +${defender.level} 金币`, 'win');
-                            }
-                        } else {
-                            renderCell(defenderPos);
+                    }
+                    
+                    log(`${PIECES[attacker.type].name} 攻击 ${PIECES[defender.type].name}`, 'dmg');
+                    
+                    // 死亡
+                    if (defender.hp <= 0) {
+                        if (defender.isEnemy) {
+                            score += defender.level * 10;
+                            gold += defender.level * 2;
+                            log(`击败 ${PIECES[defender.type].name}! +${defender.level * 2}💰`, 'win');
                         }
+                        board[defIdx] = null;
+                        renderCell(defIdx);
                     }
                 }
                 
-                if (turns > 20) clearInterval(interval);
-            }, 800);
+                updateUI();
+                
+                // 检查胜负
+                const myAlive = board.filter(p => p && !p.isEnemy).length;
+                const enemyAlive = board.filter(p => p && p.isEnemy).length;
+                
+                if (myAlive === 0) {
+                    gameOver = true;
+                    showModal('失败');
+                } else if (enemyAlive === 0) {
+                    // 胜利，清波敌人并生成新的
+                    setTimeout(() => {
+                        round++;
+                        const bonus = round * 2;
+                        gold += bonus;
+                        log(`回合 ${round}! +${bonus}💰`, 'win');
+                        spawnEnemies(round + 2);
+                        updateUI();
+                    }, 1000);
+                }
+            };
+            
+            const interval = setInterval(() => {
+                if (gameOver || !inBattle) {
+                    clearInterval(interval);
+                    return;
+                }
+                tick();
+            }, 900);
         }
         
-        // 获取相邻格子
-        function getNeighbors(index) {
-            const row = Math.floor(index / 8);
-            const col = index % 8;
-            const neighbors = [];
-            
-            const dirs = [[-1,0], [1,0], [0,-1], [0,1]];
-            for (const [dr, dc] of dirs) {
-                const nr = row + dr, nc = col + dc;
-                if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
-                    neighbors.push(nr * 8 + nc);
+        function endBattle() {
+            if (!gameOver) {
+                log('战斗结束', 'info');
+            }
+        }
+        
+        // ============ 敌人 ============
+        function spawnEnemies(count) {
+            const types = Object.keys(PIECES);
+            for (let i = 0; i < count; i++) {
+                let pos;
+                let tries = 0;
+                do {
+                    pos = 32 + Math.floor(Math.random() * 32);
+                    tries++;
+                } while (board[pos] && tries < 20);
+                
+                if (!board[pos]) {
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    const data = PIECES[type];
+                    const level = Math.min(Math.ceil(round / 2), 3);
+                    
+                    board[pos] = {
+                        type,
+                        icon: data.icon,
+                        hp: data.hp * level,
+                        maxHp: data.hp * level,
+                        atk: data.atk * level,
+                        level,
+                        isEnemy: true
+                    };
                 }
             }
-            return neighbors;
+            renderBoard();
         }
         
-        // 初始化
-        initBoard();
-        refreshShop();
-        updateLog('欢迎来到 Chess Arena!', 'win');
-        updateLog('点击商店棋子，再点击棋盘部署', 'msg');
+        // ============ 工具函数 ============
+        function getRangeCells(index, range) {
+            const row = Math.floor(index / 8);
+            const col = index % 8;
+            const cells = [];
+            
+            for (let dr = -range; dr <= range; dr++) {
+                for (let dc = -range; dc <= range; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    const nr = row + dr, nc = col + dc;
+                    if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+                        cells.push(nr * 8 + nc);
+                    }
+                }
+            }
+            return cells;
+        }
+        
+        function renderCell(index) {
+            const cell = document.getElementById(`cell-${index}`);
+            if (!cell) return;
+            
+            const p = board[index];
+            cell.innerHTML = '';
+            cell.classList.remove('enemy');
+            
+            if (p) {
+                if (p.isEnemy) cell.classList.add('enemy');
+                
+                const piece = document.createElement('div');
+                piece.className = `piece ${p.type}`;
+                piece.textContent = p.icon;
+                
+                const hpBar = document.createElement('div');
+                hpBar.className = 'hp-bar';
+                const hpPct = (p.hp / p.maxHp) * 100;
+                hpBar.innerHTML = `<div class="hp ${hpPct < 30 ? 'low' : ''}" style="width:${hpPct}%"></div>`;
+                piece.appendChild(hpBar);
+                
+                if (p.level > 1) {
+                    const lv = document.createElement('div');
+                    lv.className = 'level-badge';
+                    lv.textContent = p.level;
+                    piece.appendChild(lv);
+                }
+                
+                cell.appendChild(piece);
+            }
+        }
+        
+        function showDmg(index, text) {
+            const cell = document.getElementById(`cell-${index}`);
+            if (!cell) return;
+            
+            const dmg = document.createElement('div');
+            dmg.className = 'dmg-text';
+            dmg.textContent = text;
+            cell.appendChild(dmg);
+            
+            setTimeout(() => dmg.remove(), 800);
+        }
+        
+        function updateUI() {
+            document.getElementById('gold').textContent = gold;
+            document.getElementById('round').textContent = round;
+            document.getElementById('score').textContent = score;
+        }
+        
+        function log(msg, type = '') {
+            const el = document.getElementById('log');
+            const line = document.createElement('div');
+            line.className = `log ${type}`;
+            line.textContent = msg;
+            el.insertBefore(line, el.firstChild);
+            
+            while (el.children.length > 10) el.removeChild(el.lastChild);
+        }
+        
+        function showModal(msg) {
+            document.getElementById('modal-title').textContent = msg;
+            document.getElementById('modal-score').textContent = score;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+        
+        function restart() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('log').innerHTML = '';
+            init();
+        }
+        
+        // 启动
+        init();
         
         // 测试
-        console.log('✅ Chess Arena Ready');
+        console.log('✅ Chess Arena MVP Ready');
     </script>
 </body>
 </html>
