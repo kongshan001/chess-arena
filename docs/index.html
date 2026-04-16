@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Arena - 棋阵 (MVP)</title>
+    <title>Chess Arena - 棋阵</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -11,20 +11,23 @@
             min-height: 100vh;
             font-family: 'Microsoft YaHei', system-ui, sans-serif;
             color: #fff;
+            overflow-x: hidden;
         }
         .header {
-            padding: 1rem 2rem;
-            background: rgba(0,0,0,0.5);
+            padding: 12px 20px;
+            background: rgba(0,0,0,0.6);
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #333;
         }
-        .header h1 { color: #ffd700; font-size: 1.4rem; }
-        .stats { display: flex; gap: 20px; font-size: 1.1rem; }
-        .stats .gold { color: #ffd700; }
-        .stats .round { color: #4cc9f0; }
-        .stats .score { color: #2ecc71; }
+        .header h1 { color: #ffd700; font-size: 1.3rem; }
+        .stats { display: flex; gap: 16px; font-size: 1rem; }
+        .stats span { color: #aaa; }
+        .stats .val { color: #fff; font-weight: bold; }
+        .gold { color: #ffd700 !important; }
+        .round { color: #4cc9f0 !important; }
+        .score { color: #2ecc71 !important; }
         
         .main {
             display: flex;
@@ -34,207 +37,278 @@
             flex-wrap: wrap;
         }
         
-        /* 游戏棋盘 */
         .board-box {
-            background: #1a1a2e;
-            padding: 8px;
-            border-radius: 12px;
-            border: 2px solid #333;
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1e);
+            padding: 10px;
+            border-radius: 16px;
+            border: 2px solid #3a3a5a;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
         #board {
             display: grid;
-            grid-template-columns: repeat(8, 54px);
-            grid-template-rows: repeat(8, 54px);
+            grid-template-columns: repeat(8, 56px);
+            grid-template-rows: repeat(8, 56px);
             gap: 2px;
-            background: #111;
+            background: #0a0a15;
+            border-radius: 8px;
         }
         .cell {
-            width: 54px;
-            height: 54px;
+            width: 56px;
+            height: 56px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             position: relative;
-            font-size: 2rem;
-            border-radius: 4px;
+            font-size: 2.2rem;
+            border-radius: 6px;
+            transition: all 0.15s;
         }
-        .cell.light { background: #2d4a6e; }
-        .cell.dark { background: #1e2d4a; }
-        .cell:hover { filter: brightness(1.2); }
-        .cell.my { border: 2px solid #4cc9f0; }
-        .cell.enemy { border: 2px solid #e63946; }
+        .cell.light { background: linear-gradient(135deg, #2d4a6e, #1e3a5e); }
+        .cell.dark { background: linear-gradient(135deg, #1e2d4a, #141e35); }
+        .cell:hover { filter: brightness(1.3); transform: scale(1.02); z-index: 2; }
+        .cell.my-zone { border: 2px solid #4cc9f055; }
+        .cell.enemy-zone { border: 2px solid #e6394633; }
         .cell.selected { 
             background: #ffd700 !important; 
-            box-shadow: 0 0 20px #ffd700;
+            box-shadow: 0 0 25px #ffd700, inset 0 0 20px rgba(255,215,0,0.3);
         }
         
         .piece {
-            width: 46px;
-            height: 46px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            font-size: 1.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.2);
             position: relative;
+            transition: all 0.2s;
+        }
+        .piece::before {
+            content: '';
+            position: absolute;
+            top: 2px; left: 20%;
+            width: 60%;
+            height: 30%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+            border-radius: 50%;
         }
         .piece.warrior { background: linear-gradient(135deg, #e74c3c, #c0392b); }
         .piece.mage { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .piece.mage::after {
+            content: '🔮';
+            position: absolute;
+            font-size: 0.8rem;
+            top: -5px; right: -5px;
+            animation: float 1s infinite;
+        }
         .piece.archer { background: linear-gradient(135deg, #1abc9c, #16a085); }
         .piece.rogue { background: linear-gradient(135deg, #e91e63, #c2185b); }
         .piece.healer { background: linear-gradient(135deg, #ffc107, #ff8f00); }
+        .piece.healer::after {
+            content: '✨';
+            position: absolute;
+            font-size: 0.7rem;
+            top: -5px; right: -5px;
+            animation: pulse 0.8s infinite;
+        }
         .piece.tank { background: linear-gradient(135deg, #607d8b, #455a64); }
+        .piece.tank::after {
+            content: '🛡️';
+            position: absolute;
+            font-size: 0.6rem;
+            top: -3px; right: -3px;
+        }
         .piece.knight { background: linear-gradient(135deg, #3498db, #2980b9); }
+        
+        @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)} }
+        @keyframes pulse { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:0.7} }
         
         .hp-bar {
             position: absolute;
-            bottom: -6px;
+            bottom: -8px;
             left: 50%;
             transform: translateX(-50%);
-            width: 40px;
-            height: 5px;
-            background: #333;
+            width: 42px;
+            height: 6px;
+            background: #222;
             border-radius: 3px;
             overflow: hidden;
+            border: 1px solid #444;
         }
         .hp-bar .hp { 
             height: 100%; 
-            background: #2ecc71; 
-            transition: width 0.2s;
+            background: linear-gradient(90deg, #27ae60, #2ecc71); 
+            transition: width 0.3s;
         }
-        .hp-bar .hp.low { background: #e74c3c; }
+        .hp-bar .hp.medium { background: linear-gradient(90deg, #f39c12, #f1c40f); }
+        .hp-bar .hp.low { background: linear-gradient(90deg, #c0392b, #e74c3c); }
         
         .level-badge {
             position: absolute;
-            top: -4px;
-            right: -4px;
-            width: 16px;
-            height: 16px;
-            background: #ffd700;
+            top: -6px;
+            right: -6px;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
             color: #000;
-            font-size: 0.7rem;
-            font-weight: bold;
+            font-size: 0.75rem;
+            font-weight: 900;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
         /* 商店 */
         .shop-box {
-            background: #1a1a2e;
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1e);
             padding: 16px;
-            border-radius: 12px;
-            min-width: 300px;
-            border: 2px solid #333;
+            border-radius: 16px;
+            min-width: 280px;
+            border: 2px solid #3a3a5a;
         }
-        .shop-box h3 { 
-            color: #4cc9f0; 
-            margin-bottom: 12px;
-            font-size: 1rem;
-        }
-        .shop-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
+        .shop-box h3 { color: #4cc9f0; margin-bottom: 12px; font-size: 1rem; }
+        .shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .shop-item {
-            background: #2a2a4e;
+            background: linear-gradient(145deg, #2a2a4e, #1a1a3e);
             padding: 12px 8px;
-            border-radius: 8px;
+            border-radius: 10px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.2s;
             border: 2px solid transparent;
         }
         .shop-item:hover { 
-            background: #3a3a6e; 
+            background: linear-gradient(145deg, #3a3a6e, #2a2a4e); 
             transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(76,201,240,0.2);
         }
         .shop-item.selected { 
             border-color: #ffd700;
-            box-shadow: 0 0 15px #ffd700;
+            box-shadow: 0 0 20px #ffd700;
+            animation: glow 1s infinite;
         }
-        .shop-item .icon { font-size: 1.8rem; }
-        .shop-item .name { font-size: 0.8rem; margin: 4px 0; }
-        .shop-item .cost { color: #ffd700; font-size: 0.9rem; }
+        @keyframes glow { 0%,100%{box-shadow:0 0 15px #ffd700}50%{box-shadow:0 0 25px #ffd700} }
+        .shop-item .icon { font-size: 2rem; margin-bottom: 4px; }
+        .shop-item .name { font-size: 0.8rem; margin: 4px 0; color: #ddd; }
+        .shop-item .cost { color: #ffd700; font-size: 0.9rem; font-weight: bold; }
         
-        /* 控制区 */
-        .controls {
-            margin-top: 16px;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+        /* 控制 */
+        .controls { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
         .btn {
-            padding: 10px 20px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             color: #fff;
             cursor: pointer;
             font-size: 0.95rem;
             font-weight: bold;
-            transition: all 0.15s;
+            transition: all 0.2s;
         }
-        .btn:hover { filter: brightness(1.2); transform: scale(1.02); }
-        .btn-start { background: #27ae60; }
-        .btn-refresh { background: #3498db; }
-        .btn-sell { background: #9b59b6; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .btn-start { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .btn-refresh { background: linear-gradient(135deg, #2980b9, #3498db); }
+        .btn-sell { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        
+        /* 特效层 */
+        .effects {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        /* 伤害飘字 */
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-60px) scale(0.8); opacity: 0; }
+        }
+        .dmg-num {
+            position: absolute;
+            font-weight: 900;
+            font-size: 1.5rem;
+            text-shadow: 0 2px 4px #000, 0 0 10px currentColor;
+            animation: flyUp 0.8s forwards;
+            z-index: 1001;
+        }
+        .dmg-num.crit { color: #ff6b6b; font-size: 1.8rem; }
+        .dmg-num.heal { color: #2ecc71; }
+        
+        /* 爆炸特效 */
+        @keyframes explode {
+            0% { transform: scale(0); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .explosion {
+            position: absolute;
+            width: 60px; height: 60px;
+            background: radial-gradient(circle, #ffd700, transparent);
+            border-radius: 50%;
+            animation: explode 0.4s forwards;
+            pointer-events: none;
+        }
+        
+        /* 攻击特效 */
+        @keyframes slash {
+            0% { transform: scale(0.5) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+            100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
+        }
+        .slash-effect {
+            position: absolute;
+            font-size: 2.5rem;
+            animation: slash 0.3s forwards;
+            pointer-events: none;
+            text-shadow: 0 0 20px #fff;
+        }
         
         /* 日志 */
         .log-box {
-            background: #111;
+            background: linear-gradient(145deg, #111, #0a0a15);
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-top: 16px;
-            max-height: 120px;
+            max-height: 130px;
             overflow-y: auto;
             font-size: 0.85rem;
             border: 1px solid #333;
         }
-        .log-box .log { margin: 4px 0; color: #888; }
+        .log-box .log { margin: 5px 0; color: #777; }
         .log-box .log.win { color: #2ecc71; }
-        .log-box .log.dmg { color: #e74c3c; }
+        .log-box .log.dmg { color: #ff6b6b; }
+        .log-box .log.heal { color: #2ecc71; }
         .log-box .log.info { color: #4cc9f0; }
         
-        /* 伤害飘字 */
-        @keyframes dmg {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-30px); opacity: 0; }
-        }
-        .dmg-text {
-            position: absolute;
-            color: #e74c3c;
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-shadow: 0 0 5px #000;
-            animation: dmg 0.8s forwards;
-            pointer-events: none;
-            z-index: 100;
-        }
-        
-        /* 结束界面 */
+        /* 结束弹窗 */
         .modal {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
         }
         .modal-content {
-            background: #1a1a2e;
-            padding: 40px;
-            border-radius: 16px;
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1e);
+            padding: 40px 60px;
+            border-radius: 20px;
             text-align: center;
             border: 3px solid #ffd700;
+            box-shadow: 0 0 60px #ffd70055;
+            animation: popIn 0.3s;
         }
-        .modal-content h2 { color: #ffd700; font-size: 2rem; margin-bottom: 16px; }
-        .modal-content .score { font-size: 3rem; color: #2ecc71; margin: 20px 0; }
+        @keyframes popIn { 0%{transform:scale(0.5);opacity:0}100%{transform:scale(1);opacity:1} }
+        .modal-content h2 { color: #ffd700; font-size: 2.5rem; margin-bottom: 16px; }
+        .modal-content .score { font-size: 4rem; color: #2ecc71; margin: 20px 0; 
+            text-shadow: 0 0 30px #2ecc71; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -242,9 +316,9 @@
     <div class="header">
         <h1>♟️ Chess Arena</h1>
         <div class="stats">
-            <span>💰 <span class="gold" id="gold">10</span></span>
-            <span>回合: <span class="round" id="round">1</span></span>
-            <span>得分: <span class="score" id="score">0</span></span>
+            <span>💰 <span class="val gold" id="gold">10</span></span>
+            <span>回合 <span class="val round" id="round">1</span></span>
+            <span>得分 <span class="val score" id="score">0</span></span>
         </div>
     </div>
     
@@ -258,14 +332,16 @@
             <div class="shop-grid" id="shop"></div>
             
             <div class="controls">
-                <button class="btn btn-start" onclick="startBattle()">⚔️ 开始战斗</button>
-                <button class="btn btn-refresh" onclick="refreshShop()">🔄 刷新 (2💰)</button>
+                <button class="btn btn-start" onclick="startBattle()">⚔️ 战斗</button>
+                <button class="btn btn-refresh" onclick="refreshShop()">🔄 刷新</button>
                 <button class="btn btn-sell" onclick="sellPiece()">💰 出售</button>
             </div>
             
             <div class="log-box" id="log"></div>
         </div>
     </div>
+    
+    <div class="effects" id="effects"></div>
     
     <div class="modal hidden" id="modal">
         <div class="modal-content">
@@ -277,78 +353,61 @@
     </div>
 
     <script>
-        // ============ 核心数据 ============
         const PIECES = {
-            warrior: { name: '战士', icon: '⚔️', cost: 1, hp: 400, atk: 50, range: 1 },
-            mage: { name: '法师', icon: '🔮', cost: 2, hp: 250, atk: 70, range: 3 },
-            archer: { name: '弓箭手', icon: '🏹', cost: 2, hp: 280, atk: 60, range: 2 },
-            rogue: { name: '盗贼', icon: '🗡️', cost: 2, hp: 300, atk: 55, range: 1 },
-            healer: { name: '治疗师', icon: '💊', cost: 3, hp: 200, atk: 35, range: 2 },
-            tank: { name: '守卫', icon: '🛡️', cost: 1, hp: 550, atk: 35, range: 1 },
-            knight: { name: '骑士', icon: '🐴', cost: 2, hp: 400, atk: 45, range: 1 }
+            warrior: { name:'战士', icon:'⚔️', cost:1, hp:400, atk:50, color:'#e74c3c' },
+            mage: { name:'法师', icon:'🔮', cost:2, hp:250, atk:70, color:'#9b59b6' },
+            archer: { name:'弓箭手', icon:'🏹', cost:2, hp:280, atk:60, color:'#1abc9c' },
+            rogue: { name:'盗贼', icon:'🗡️', cost:2, hp:300, atk:55, color:'#e91e63' },
+            healer: { name:'治疗师', icon:'💊', cost:3, hp:200, atk:35, color:'#ffc107' },
+            tank: { name:'守卫', icon:'🛡️', cost:1, hp:550, atk:35, color:'#607d8b' },
+            knight: { name:'骑士', icon:'🐴', cost:2, hp:400, atk:45, color:'#3498db' }
         };
         
-        const BOARD_SIZE = 8;
-        let board = [];
-        let gold = 10;
-        let round = 1;
-        let score = 0;
-        let selected = null;
-        let shopItems = [];
-        let gameOver = false;
-        let inBattle = false;
+        let board = [], gold = 10, round = 1, score = 0;
+        let selected = null, shopItems = [], gameOver = false, inBattle = false;
         
-        // ============ 初始化 ============
         function init() {
             board = Array(64).fill(null);
-            gold = 10;
-            round = 1;
-            score = 0;
-            gameOver = false;
-            inBattle = false;
+            gold = 10; round = 1; score = 0;
+            gameOver = false; inBattle = false;
             selected = null;
             
             renderBoard();
             refreshShop();
             spawnEnemies(4);
             updateUI();
-            log('欢迎! 点击商店棋子，再点击蓝色区域部署', 'info');
+            log('欢迎! 点击棋子再点蓝色区部署', 'info');
         }
         
-        // ============ 渲染棋盘 ============
         function renderBoard() {
             const el = document.getElementById('board');
             el.innerHTML = '';
             
             for (let i = 0; i < 64; i++) {
-                const row = Math.floor(i / 8);
-                const col = i % 8;
+                const row = Math.floor(i / 8), col = i % 8;
                 const cell = document.createElement('div');
                 cell.className = `cell ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+                if (i < 32) cell.classList.add('my-zone');
+                if (i >= 32) cell.classList.add('enemy-zone');
                 cell.style.position = 'relative';
-                
-                // 阵营标记
-                if (i < 32) cell.classList.add('my');
-                if (board[i] && board[i].isEnemy) cell.classList.add('enemy');
-                
                 cell.onclick = () => clickCell(i);
                 cell.id = `cell-${i}`;
                 
-                // 棋子
                 const p = board[i];
                 if (p) {
                     const piece = document.createElement('div');
                     piece.className = `piece ${p.type}`;
                     piece.textContent = p.icon;
                     
-                    // 血条
                     const hpBar = document.createElement('div');
                     hpBar.className = 'hp-bar';
                     const hpPct = (p.hp / p.maxHp) * 100;
-                    hpBar.innerHTML = `<div class="hp ${hpPct < 30 ? 'low' : ''}" style="width:${hpPct}%"></div>`;
+                    let hpClass = '';
+                    if (hpPct < 30) hpClass = 'low';
+                    else if (hpPct < 60) hpClass = 'medium';
+                    hpBar.innerHTML = `<div class="hp ${hpClass}" style="width:${hpPct}%"></div>`;
                     piece.appendChild(hpBar);
                     
-                    // 等级
                     if (p.level > 1) {
                         const lv = document.createElement('div');
                         lv.className = 'level-badge';
@@ -358,91 +417,57 @@
                     
                     cell.appendChild(piece);
                 }
-                
                 el.appendChild(cell);
             }
         }
         
-        // ============ 渲染商店 ============
         function refreshShop() {
             const el = document.getElementById('shop');
             el.innerHTML = '';
             shopItems = [];
             
+            const types = Object.keys(PIECES);
             for (let i = 0; i < 6; i++) {
-                const types = Object.keys(PIECES);
                 const type = types[Math.floor(Math.random() * types.length)];
                 const data = PIECES[type];
                 shopItems.push({ type, ...data });
                 
                 const item = document.createElement('div');
                 item.className = 'shop-item';
-                item.innerHTML = `
-                    <div class="icon">${data.icon}</div>
-                    <div class="name">${data.name}</div>
-                    <div class="cost">💰${data.cost}</div>
-                `;
+                item.innerHTML = `<div class="icon">${data.icon}</div><div class="name">${data.name}</div><div class="cost">💰${data.cost}</div>`;
                 item.onclick = () => selectShop(i);
                 el.appendChild(item);
             }
         }
         
-        // ============ 商店选择 ============
         function selectShop(index) {
             if (inBattle) return;
-            
             const item = shopItems[index];
-            if (gold < item.cost) {
-                log('金币不足!', 'dmg');
-                return;
-            }
+            if (gold < item.cost) { log('金币不足!', 'dmg'); return; }
             
-            document.querySelectorAll('.shop-item').forEach((el, i) => {
-                el.classList.toggle('selected', i === index);
-            });
-            
+            document.querySelectorAll('.shop-item').forEach((el, i) => el.classList.toggle('selected', i === index));
             selected = { type: 'shop', index };
-            log(`选择 ${item.name}，点击蓝色区域部署`, 'info');
+            log(`选择 ${item.name}，点击蓝色区部署`, 'info');
         }
         
-        // ============ 点击棋盘 ============
         function clickCell(index) {
             if (gameOver || inBattle) return;
             
             const p = board[index];
             
             if (selected?.type === 'shop') {
-                // 部署棋子
-                if (index >= 32) {
-                    log('只能在蓝色区域部署!', 'dmg');
-                    return;
-                }
-                if (p) {
-                    log('已有棋子!', 'dmg');
-                    return;
-                }
+                if (index >= 32) { log('蓝色区部署!', 'dmg'); return; }
+                if (p) { log('已有棋子!', 'dmg'); return; }
                 
                 const item = shopItems[selected.index];
-                const newPiece = {
-                    type: item.type,
-                    icon: item.icon,
-                    hp: item.hp,
-                    maxHp: item.hp,
-                    atk: item.atk,
-                    level: 1,
-                    isEnemy: false
-                };
-                
-                board[index] = newPiece;
+                board[index] = { type: item.type, icon: item.icon, hp: item.hp, maxHp: item.hp, atk: item.atk, level: 1, isEnemy: false };
                 gold -= item.cost;
                 renderBoard();
                 updateUI();
                 log(`部署 ${item.name}`, 'win');
-                
                 selected = null;
                 document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
             } else if (p && !p.isEnemy) {
-                // 选中己方棋子
                 document.querySelectorAll('.cell').forEach(el => el.classList.remove('selected'));
                 document.getElementById(`cell-${index}`).classList.add('selected');
                 selected = { type: 'board', index };
@@ -450,13 +475,8 @@
             }
         }
         
-        // ============ 出售棋子 ============
         function sellPiece() {
-            if (selected?.type !== 'board') {
-                log('先选中棋子', 'dmg');
-                return;
-            }
-            
+            if (selected?.type !== 'board') { log('先选中棋子', 'dmg'); return; }
             const p = board[selected.index];
             if (!p || p.isEnemy) return;
             
@@ -467,16 +487,12 @@
             
             renderBoard();
             updateUI();
-            log(`出售获得 💰${refund}`, 'win');
+            log(`出售 +💰${refund}`, 'win');
         }
         
-        // ============ 战斗系统 ============
         function startBattle() {
             const myPieces = board.filter(p => p && !p.isEnemy);
-            if (myPieces.length === 0) {
-                log('需要部署棋子!', 'dmg');
-                return;
-            }
+            if (myPieces.length === 0) { log('需要部署棋子!', 'dmg'); return; }
             
             inBattle = true;
             log('⚔️ 战斗开始!', 'win');
@@ -484,64 +500,67 @@
         }
         
         function battleLoop() {
-            let battleTicks = 0;
-            const maxTicks = 30;
+            let ticks = 0;
             
             const tick = () => {
                 if (gameOver) return;
-                battleTicks++;
+                ticks++;
                 
-                // 寻找可战斗的对
                 const pairs = [];
                 for (let i = 0; i < 64; i++) {
-                    const attacker = board[i];
-                    if (!attacker || attacker.isEnemy) continue;
-                    
-                    const neighbors = getRangeCells(i, 1);
-                    for (const n of neighbors) {
-                        const defender = board[n];
-                        if (defender && defender.isEnemy) {
-                            pairs.push([i, n]);
-                        }
+                    const a = board[i];
+                    if (!a || a.isEnemy) continue;
+                    for (const n of getNeighbors(i)) {
+                        const d = board[n];
+                        if (d && d.isEnemy) pairs.push([i, n]);
                     }
                 }
                 
-                if (pairs.length === 0 || battleTicks >= maxTicks) {
+                if (pairs.length === 0 || ticks >= 25) {
                     inBattle = false;
-                    endBattle();
                     return;
                 }
                 
-                // 执行战斗
                 for (const [atkIdx, defIdx] of pairs) {
                     const attacker = board[atkIdx];
                     const defender = board[defIdx];
-                    
                     if (!attacker || !defender) continue;
                     
-                    // 攻击
-                    defender.hp -= attacker.atk;
-                    showDmg(defIdx, `-${attacker.atk}`);
-                    renderCell(defIdx);
+                    // 攻击特效
+                    showSlashEffect(atkIdx);
                     
-                    // 治疗师特殊效果
+                    // 伤害
+                    const dmg = attacker.atk;
+                    defender.hp -= dmg;
+                    
+                    showDmg(defIdx, `-${dmg}`, 'crit');
+                    playSound('hit');
+                    
+                    log(`${PIECES[attacker.type].name} → ${PIECES[defender.type].name} ${dmg}`, 'dmg');
+                    
+                    // 治疗
                     if (attacker.type === 'healer') {
-                        const allies = getRangeCells(atkIdx, 2).map(i => board[i]).filter(p => p && !p.isEnemy);
-                        if (allies.length > 0) {
-                            const target = allies[Math.floor(Math.random() * allies.length)];
-                            target.hp = Math.min(target.hp + 20, target.maxHp);
-                            renderCell(atkIdx);
+                        for (const ally of getNeighbors(atkIdx)) {
+                            if (board[ally] && !board[ally].isEnemy) {
+                                const heal = Math.floor(attacker.atk * 0.4);
+                                board[ally].hp = Math.min(board[ally].hp + heal, board[ally].maxHp);
+                                showDmg(atkIdx, `+${heal}`, 'heal');
+                                log(`${PIECES[attacker.type].name} 治疗 +${heal}`, 'heal');
+                            }
                         }
                     }
                     
-                    log(`${PIECES[attacker.type].name} 攻击 ${PIECES[defender.type].name}`, 'dmg');
+                    renderCell(atkIdx);
+                    renderCell(defIdx);
                     
                     // 死亡
                     if (defender.hp <= 0) {
                         if (defender.isEnemy) {
+                            showExplosion(defIdx);
                             score += defender.level * 10;
                             gold += defender.level * 2;
-                            log(`击败 ${PIECES[defender.type].name}! +${defender.level * 2}💰`, 'win');
+                            log(`💀 击败 ${PIECES[defender.type].name}! +${defender.level * 2}💰`, 'win');
+                            playSound('kill');
                         }
                         board[defIdx] = null;
                         renderCell(defIdx);
@@ -550,84 +569,51 @@
                 
                 updateUI();
                 
-                // 检查胜负
-                const myAlive = board.filter(p => p && !p.isEnemy).length;
-                const enemyAlive = board.filter(p => p && p.isEnemy).length;
+                // 胜负
+                const my = board.filter(p => p && !p.isEnemy).length;
+                const en = board.filter(p => p && p.isEnemy).length;
                 
-                if (myAlive === 0) {
-                    gameOver = true;
-                    showModal('失败');
-                } else if (enemyAlive === 0) {
-                    // 胜利，清波敌人并生成新的
+                if (my === 0) { gameOver = true; showModal('失败'); playSound('lose'); }
+                else if (en === 0) {
                     setTimeout(() => {
                         round++;
-                        const bonus = round * 2;
-                        gold += bonus;
-                        log(`回合 ${round}! +${bonus}💰`, 'win');
+                        gold += round * 2;
+                        log(`✅ 回合${round} +${round * 2}💰`, 'win');
                         spawnEnemies(round + 2);
                         updateUI();
-                    }, 1000);
+                    }, 800);
                 }
             };
             
             const interval = setInterval(() => {
-                if (gameOver || !inBattle) {
-                    clearInterval(interval);
-                    return;
-                }
+                if (gameOver || !inBattle) { clearInterval(interval); return; }
                 tick();
-            }, 900);
+            }, 700);
         }
         
-        function endBattle() {
-            if (!gameOver) {
-                log('战斗结束', 'info');
-            }
-        }
-        
-        // ============ 敌人 ============
         function spawnEnemies(count) {
-            const types = Object.keys(PIECES);
             for (let i = 0; i < count; i++) {
-                let pos;
-                let tries = 0;
-                do {
-                    pos = 32 + Math.floor(Math.random() * 32);
-                    tries++;
-                } while (board[pos] && tries < 20);
-                
+                let pos, tries = 0;
+                do { pos = 32 + Math.floor(Math.random() * 32); tries++; } while (board[pos] && tries < 20);
                 if (!board[pos]) {
+                    const types = Object.keys(PIECES);
                     const type = types[Math.floor(Math.random() * types.length)];
                     const data = PIECES[type];
                     const level = Math.min(Math.ceil(round / 2), 3);
-                    
-                    board[pos] = {
-                        type,
-                        icon: data.icon,
-                        hp: data.hp * level,
-                        maxHp: data.hp * level,
-                        atk: data.atk * level,
-                        level,
-                        isEnemy: true
-                    };
+                    board[pos] = { type, icon: data.icon, hp: data.hp * level, maxHp: data.hp * level, atk: data.atk * level, level, isEnemy: true };
                 }
             }
             renderBoard();
         }
         
-        // ============ 工具函数 ============
-        function getRangeCells(index, range) {
-            const row = Math.floor(index / 8);
-            const col = index % 8;
+        function getNeighbors(index) {
+            const row = Math.floor(index / 8), col = index % 8;
             const cells = [];
-            
-            for (let dr = -range; dr <= range; dr++) {
-                for (let dc = -range; dc <= range; dc++) {
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
                     if (dr === 0 && dc === 0) continue;
                     const nr = row + dr, nc = col + dc;
-                    if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
-                        cells.push(nr * 8 + nc);
-                    }
+                    if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) cells.push(nr * 8 + nc);
                 }
             }
             return cells;
@@ -636,14 +622,9 @@
         function renderCell(index) {
             const cell = document.getElementById(`cell-${index}`);
             if (!cell) return;
-            
-            const p = board[index];
             cell.innerHTML = '';
-            cell.classList.remove('enemy');
-            
+            const p = board[index];
             if (p) {
-                if (p.isEnemy) cell.classList.add('enemy');
-                
                 const piece = document.createElement('div');
                 piece.className = `piece ${p.type}`;
                 piece.textContent = p.icon;
@@ -651,7 +632,8 @@
                 const hpBar = document.createElement('div');
                 hpBar.className = 'hp-bar';
                 const hpPct = (p.hp / p.maxHp) * 100;
-                hpBar.innerHTML = `<div class="hp ${hpPct < 30 ? 'low' : ''}" style="width:${hpPct}%"></div>`;
+                let hpClass = hpPct < 30 ? 'low' : hpPct < 60 ? 'medium' : '';
+                hpBar.innerHTML = `<div class="hp ${hpClass}" style="width:${hpPct}%"></div>`;
                 piece.appendChild(hpBar);
                 
                 if (p.level > 1) {
@@ -660,21 +642,62 @@
                     lv.textContent = p.level;
                     piece.appendChild(lv);
                 }
-                
                 cell.appendChild(piece);
             }
         }
         
-        function showDmg(index, text) {
+        function showDmg(index, text, type) {
             const cell = document.getElementById(`cell-${index}`);
             if (!cell) return;
-            
-            const dmg = document.createElement('div');
-            dmg.className = 'dmg-text';
-            dmg.textContent = text;
-            cell.appendChild(dmg);
-            
-            setTimeout(() => dmg.remove(), 800);
+            const el = document.createElement('div');
+            el.className = `dmg-num ${type}`;
+            el.textContent = text;
+            cell.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+        
+        function showSlashEffect(index) {
+            const cell = document.getElementById(`cell-${index}`);
+            if (!cell) return;
+            const el = document.createElement('div');
+            el.className = 'slash-effect';
+            el.textContent = '💥';
+            cell.appendChild(el);
+            setTimeout(() => el.remove(), 300);
+        }
+        
+        function showExplosion(index) {
+            const cell = document.getElementById(`cell-${index}`);
+            if (!cell) return;
+            const el = document.createElement('div');
+            el.className = 'explosion';
+            cell.appendChild(el);
+            setTimeout(() => el.remove(), 400);
+        }
+        
+        function playSound(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                if (type === 'hit') {
+                    osc.frequency.value = 200;
+                    gain.gain.value = 0.1;
+                } else if (type === 'kill') {
+                    osc.frequency.value = 400;
+                    gain.gain.value = 0.15;
+                } else if (type === 'lose') {
+                    osc.frequency.value = 150;
+                    gain.gain.value = 0.2;
+                }
+                
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+                osc.stop(ctx.currentTime + 0.2);
+            } catch(e) {}
         }
         
         function updateUI() {
@@ -685,12 +708,8 @@
         
         function log(msg, type = '') {
             const el = document.getElementById('log');
-            const line = document.createElement('div');
-            line.className = `log ${type}`;
-            line.textContent = msg;
-            el.insertBefore(line, el.firstChild);
-            
-            while (el.children.length > 10) el.removeChild(el.lastChild);
+            el.insertBefore(Object.assign(document.createElement('div'), {className: `log ${type}`, textContent: msg}), el.firstChild);
+            while (el.children.length > 8) el.removeChild(el.lastChild);
         }
         
         function showModal(msg) {
@@ -705,11 +724,7 @@
             init();
         }
         
-        // 启动
         init();
-        
-        // 测试
-        console.log('✅ Chess Arena MVP Ready');
     </script>
 </body>
 </html>
