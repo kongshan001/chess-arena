@@ -11,7 +11,6 @@
             min-height: 100vh;
             font-family: 'Microsoft YaHei', system-ui, sans-serif;
             color: #fff;
-            overflow-x: hidden;
         }
         .header {
             padding: 12px 20px;
@@ -23,302 +22,121 @@
         }
         .header h1 { color: #ffd700; font-size: 1.3rem; }
         .stats { display: flex; gap: 16px; font-size: 1rem; }
-        .stats span { color: #aaa; }
-        .stats .val { color: #fff; font-weight: bold; }
-        .gold { color: #ffd700 !important; }
-        .round { color: #4cc9f0 !important; }
-        .score { color: #2ecc71 !important; }
+        .gold { color: #ffd700; }
+        .round { color: #4cc9f0; }
+        .score { color: #2ecc71; }
         
-        .main {
-            display: flex;
-            gap: 16px;
-            padding: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+        .main { display: flex; gap: 16px; padding: 16px; justify-content: center; flex-wrap: wrap; }
         
         .board-box {
             background: linear-gradient(145deg, #1a1a2e, #0f0f1e);
             padding: 10px;
             border-radius: 16px;
             border: 2px solid #3a3a5a;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
-        #board {
-            display: grid;
-            grid-template-columns: repeat(8, 56px);
-            grid-template-rows: repeat(8, 56px);
-            gap: 2px;
-            background: #0a0a15;
-            border-radius: 8px;
-        }
+        #board { display: grid; grid-template-columns: repeat(8, 56px); grid-template-rows: repeat(8, 56px); gap: 2px; background: #0a0a15; border-radius: 8px; }
         .cell {
-            width: 56px;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            position: relative;
-            font-size: 2.2rem;
-            border-radius: 6px;
-            transition: all 0.15s;
+            width: 56px; height: 56px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; font-size: 2.2rem;
+            border-radius: 6px; transition: all 0.15s;
         }
         .cell.light { background: linear-gradient(135deg, #2d4a6e, #1e3a5e); }
         .cell.dark { background: linear-gradient(135deg, #1e2d4a, #141e35); }
-        .cell:hover { filter: brightness(1.3); transform: scale(1.02); z-index: 2; }
-        .cell.my-zone { border: 2px solid #4cc9f055; }
-        .cell.enemy-zone { border: 2px solid #e6394633; }
-        .cell.selected { 
-            background: #ffd700 !important; 
-            box-shadow: 0 0 25px #ffd700, inset 0 0 20px rgba(255,215,0,0.3);
-        }
+        .cell:hover { filter: brightness(1.3); }
+        .cell.selected { background: #ffd700 !important; box-shadow: 0 0 25px #ffd700; }
         
         .piece {
-            width: 48px;
-            height: 48px;
+            width: 48px; height: 48px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             font-size: 1.9rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.2);
             position: relative;
-            transition: all 0.2s;
         }
-        .piece::before {
-            content: '';
-            position: absolute;
-            top: 2px; left: 20%;
-            width: 60%;
-            height: 30%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
-            border-radius: 50%;
-        }
-        .piece.warrior { background: linear-gradient(135deg, #e74c3c, #c0392b); }
-        .piece.mage { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-        .piece.mage::after {
-            content: '🔮';
-            position: absolute;
-            font-size: 0.8rem;
-            top: -5px; right: -5px;
-            animation: float 1s infinite;
-        }
-        .piece.archer { background: linear-gradient(135deg, #1abc9c, #16a085); }
-        .piece.rogue { background: linear-gradient(135deg, #e91e63, #c2185b); }
-        .piece.healer { background: linear-gradient(135deg, #ffc107, #ff8f00); }
-        .piece.healer::after {
-            content: '✨';
-            position: absolute;
-            font-size: 0.7rem;
-            top: -5px; right: -5px;
-            animation: pulse 0.8s infinite;
-        }
-        .piece.tank { background: linear-gradient(135deg, #607d8b, #455a64); }
-        .piece.tank::after {
-            content: '🛡️';
-            position: absolute;
-            font-size: 0.6rem;
-            top: -3px; right: -3px;
-        }
-        .piece.knight { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .piece.warrior { background: linear-gradient(135deg, #e74c3c, #c0392b); } /* 战士 */
+        .piece.mage { background: linear-gradient(135deg, #9b59b6, #8e44ad); } /* 法师 */
+        .piece.archer { background: linear-gradient(135deg, #1abc9c, #16a085); } /* 弓箭手 */
+        .piece.rogue { background: linear-gradient(135deg, #e91e63, #c2185b); } /* 盗贼 */
+        .piece.healer { background: linear-gradient(135deg, #ffc107, #ff8f00); } /* 治疗师 */
+        .piece.tank { background: linear-gradient(135deg, #607d8b, #455a64); } /* 守卫 */
+        .piece.knight { background: linear-gradient(135deg, #3498db, #2980b9); } /* 骑士 */
+        .piece.human { background: linear-gradient(135deg, #ecf0f1, #bdc3c7); color: #333; } /* 人类 */
         
-        @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)} }
-        @keyframes pulse { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:0.7} }
+        /* 羁绊特效 */
+        .synergy-glow {
+            box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700 !important;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse { 0%,100%{box-shadow:0 0 15px #ffd700}50%{box-shadow:0 0 30px #ffd700} }
         
-        .hp-bar {
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 42px;
-            height: 6px;
-            background: #222;
-            border-radius: 3px;
-            overflow: hidden;
-            border: 1px solid #444;
-        }
-        .hp-bar .hp { 
-            height: 100%; 
-            background: linear-gradient(90deg, #27ae60, #2ecc71); 
-            transition: width 0.3s;
-        }
-        .hp-bar .hp.medium { background: linear-gradient(90deg, #f39c12, #f1c40f); }
-        .hp-bar .hp.low { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+        .hp-bar { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 42px; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+        .hp-bar .hp { height: 100%; background: #2ecc71; transition: width 0.3s; }
         
-        .level-badge {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            width: 18px;
-            height: 18px;
-            background: linear-gradient(135deg, #ffd700, #ffaa00);
-            color: #000;
-            font-size: 0.75rem;
-            font-weight: 900;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
+        .level-badge { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; background: #ffd700; color: #000; font-size: 0.75rem; font-weight: bold; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         
-        /* 商店 */
-        .shop-box {
-            background: linear-gradient(145deg, #1a1a2e, #0f0f1e);
-            padding: 16px;
-            border-radius: 16px;
-            min-width: 280px;
-            border: 2px solid #3a3a5a;
-        }
-        .shop-box h3 { color: #4cc9f0; margin-bottom: 12px; font-size: 1rem; }
+        .shop-box { background: linear-gradient(145deg, #1a1a2e, #0f0f1e); padding: 16px; border-radius: 16px; min-width: 280px; border: 2px solid #3a3a5a; }
+        .shop-box h3 { color: #4cc9f0; margin-bottom: 12px; }
         .shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .shop-item {
-            background: linear-gradient(145deg, #2a2a4e, #1a1a3e);
-            padding: 12px 8px;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-        .shop-item:hover { 
-            background: linear-gradient(145deg, #3a3a6e, #2a2a4e); 
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(76,201,240,0.2);
-        }
-        .shop-item.selected { 
-            border-color: #ffd700;
-            box-shadow: 0 0 20px #ffd700;
-            animation: glow 1s infinite;
-        }
-        @keyframes glow { 0%,100%{box-shadow:0 0 15px #ffd700}50%{box-shadow:0 0 25px #ffd700} }
-        .shop-item .icon { font-size: 2rem; margin-bottom: 4px; }
-        .shop-item .name { font-size: 0.8rem; margin: 4px 0; color: #ddd; }
-        .shop-item .cost { color: #ffd700; font-size: 0.9rem; font-weight: bold; }
+        .shop-item { background: #2a2a4e; padding: 12px 8px; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+        .shop-item:hover { transform: translateY(-4px); background: #3a3a6e; }
+        .shop-item.selected { border-color: #ffd700; box-shadow: 0 0 20px #ffd700; }
+        .shop-item .icon { font-size: 2rem; }
+        .shop-item .name { font-size: 0.8rem; margin: 4px 0; }
+        .shop-item .cost { color: #ffd700; }
         
-        /* 控制 */
-        .controls { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .controls { margin-top: 16px; display: flex; gap: 8px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 10px; color: #fff; cursor: pointer; font-weight: bold; transition: all 0.2s; }
         .btn-start { background: linear-gradient(135deg, #27ae60, #2ecc71); }
         .btn-refresh { background: linear-gradient(135deg, #2980b9, #3498db); }
-        .btn-sell { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn:hover { transform: translateY(-2px); }
         
-        /* 特效层 */
-        .effects {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            pointer-events: none;
-            z-index: 1000;
-        }
-        
-        /* 伤害飘字 */
-        @keyframes flyUp {
-            0% { transform: translateY(0) scale(1.2); opacity: 1; }
-            100% { transform: translateY(-60px) scale(0.8); opacity: 0; }
-        }
-        .dmg-num {
-            position: absolute;
-            font-weight: 900;
-            font-size: 1.5rem;
-            text-shadow: 0 2px 4px #000, 0 0 10px currentColor;
-            animation: flyUp 0.8s forwards;
-            z-index: 1001;
-        }
-        .dmg-num.crit { color: #ff6b6b; font-size: 1.8rem; }
-        .dmg-num.heal { color: #2ecc71; }
-        
-        /* 爆炸特效 */
-        @keyframes explode {
-            0% { transform: scale(0); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.8; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-        .explosion {
-            position: absolute;
-            width: 60px; height: 60px;
-            background: radial-gradient(circle, #ffd700, transparent);
-            border-radius: 50%;
-            animation: explode 0.4s forwards;
-            pointer-events: none;
-        }
-        
-        /* 攻击特效 */
-        @keyframes slash {
-            0% { transform: scale(0.5) rotate(0deg); opacity: 1; }
-            50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
-            100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
-        }
-        .slash-effect {
-            position: absolute;
-            font-size: 2.5rem;
-            animation: slash 0.3s forwards;
-            pointer-events: none;
-            text-shadow: 0 0 20px #fff;
-        }
-        
-        /* 日志 */
-        .log-box {
-            background: linear-gradient(145deg, #111, #0a0a15);
-            padding: 12px;
-            border-radius: 10px;
+        /* 羁绊面板 */
+        .synergy-panel {
             margin-top: 16px;
-            max-height: 130px;
-            overflow-y: auto;
-            font-size: 0.85rem;
+            padding: 12px;
+            background: #111;
+            border-radius: 10px;
             border: 1px solid #333;
         }
-        .log-box .log { margin: 5px 0; color: #777; }
+        .synergy-panel h4 { color: #ffd700; margin-bottom: 8px; }
+        .synergy-list { display: flex; gap: 8px; flex-wrap: wrap; }
+        .synergy-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            background: #333;
+            color: #888;
+        }
+        .synergy-badge.active {
+            background: #ffd700;
+            color: #000;
+            box-shadow: 0 0 10px #ffd700;
+        }
+        
+        .log-box { background: #111; padding: 12px; border-radius: 10px; margin-top: 16px; max-height: 100px; overflow-y: auto; font-size: 0.85rem; }
+        .log-box .log { margin: 4px 0; color: #777; }
         .log-box .log.win { color: #2ecc71; }
         .log-box .log.dmg { color: #ff6b6b; }
-        .log-box .log.heal { color: #2ecc71; }
-        .log-box .log.info { color: #4cc9f0; }
         
-        /* 结束弹窗 */
-        .modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            backdrop-filter: blur(10px);
-        }
-        .modal-content {
-            background: linear-gradient(145deg, #1a1a2e, #0f0f1e);
-            padding: 40px 60px;
-            border-radius: 20px;
-            text-align: center;
-            border: 3px solid #ffd700;
-            box-shadow: 0 0 60px #ffd70055;
-            animation: popIn 0.3s;
-        }
-        @keyframes popIn { 0%{transform:scale(0.5);opacity:0}100%{transform:scale(1);opacity:1} }
-        .modal-content h2 { color: #ffd700; font-size: 2.5rem; margin-bottom: 16px; }
-        .modal-content .score { font-size: 4rem; color: #2ecc71; margin: 20px 0; 
-            text-shadow: 0 0 30px #2ecc71; }
-        .hidden { display: none !important; }
+        /* 特效 */
+        .dmg-num { position: absolute; font-weight: 900; font-size: 1.5rem; color: #ff6b6b; text-shadow: 0 2px 4px #000; animation: flyUp 0.8s forwards; pointer-events: none; z-index: 1001; }
+        @keyframes flyUp { 0%{transform:translateY(0)scale(1.2);opacity:1}100%{transform:translateY(-60px)scale(0.8);opacity:0} }
+        
+        .modal { position: fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.9); display:flex; align-items:center; justify-content:center; z-index:2000; }
+        .modal-content { background: linear-gradient(145deg,#1a1a2e,#0f0f1e); padding:40px 60px; border-radius:20px; border:3px solid #ffd700; text-align:center; }
+        .modal-content h2 { color:#ffd700;font-size:2.5rem; }
+        .modal-content .score { font-size:4rem; color:#2ecc71; }
+        .hidden { display:none !important; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>♟️ Chess Arena</h1>
         <div class="stats">
-            <span>💰 <span class="val gold" id="gold">10</span></span>
-            <span>回合 <span class="val round" id="round">1</span></span>
-            <span>得分 <span class="val score" id="score">0</span></span>
+            <span>💰<span class="gold" id="gold">10</span></span>
+            <span>回合<span class="round" id="round">1</span></span>
+            <span>得分<span class="score" id="score">0</span></span>
         </div>
     </div>
     
@@ -328,84 +146,108 @@
         </div>
         
         <div class="shop-box">
-            <h3>🏪 棋子商店</h3>
+            <h3>🏪 商店</h3>
             <div class="shop-grid" id="shop"></div>
             
             <div class="controls">
                 <button class="btn btn-start" onclick="startBattle()">⚔️ 战斗</button>
                 <button class="btn btn-refresh" onclick="refreshShop()">🔄 刷新</button>
-                <button class="btn btn-sell" onclick="sellPiece()">💰 出售</button>
+            </div>
+            
+            <!-- 羁绊显示 -->
+            <div class="synergy-panel">
+                <h4>⚡ 羁绊 ( synergies)</h4>
+                <div class="synergy-list" id="synergy-list">
+                    <span class="synergy-badge" id="syn-human">人类 0/3</span>
+                    <span class="synergy-badge" id="syn-warrior">战士 0/3</span>
+                    <span class="synergy-badge" id="syn-mage">法师 0/3</span>
+                    <span class="synergy-badge" id="syn-archer">弓箭手 0/3</span>
+                    <span class="synergy-badge" id="syn-rogue">盗贼 0/3</span>
+                    <span class="synergy-badge" id="syn-healer">治疗 0/2</span>
+                </div>
             </div>
             
             <div class="log-box" id="log"></div>
         </div>
     </div>
     
-    <div class="effects" id="effects"></div>
-    
     <div class="modal hidden" id="modal">
         <div class="modal-content">
             <h2 id="modal-title">游戏结束</h2>
             <p>最终得分</p>
             <div class="score" id="modal-score">0</div>
-            <button class="btn btn-start" onclick="restart()">🔄 再来一局</button>
+            <button class="btn btn-start" onclick="restart()">🔄 再来</button>
         </div>
     </div>
 
     <script>
+        // 棋子定义 + 羁绊
         const PIECES = {
-            warrior: { name:'战士', icon:'⚔️', cost:1, hp:400, atk:50, color:'#e74c3c' },
-            mage: { name:'法师', icon:'🔮', cost:2, hp:250, atk:70, color:'#9b59b6' },
-            archer: { name:'弓箭手', icon:'🏹', cost:2, hp:280, atk:60, color:'#1abc9c' },
-            rogue: { name:'盗贼', icon:'🗡️', cost:2, hp:300, atk:55, color:'#e91e63' },
-            healer: { name:'治疗师', icon:'💊', cost:3, hp:200, atk:35, color:'#ffc107' },
-            tank: { name:'守卫', icon:'🛡️', cost:1, hp:550, atk:35, color:'#607d8b' },
-            knight: { name:'骑士', icon:'🐴', cost:2, hp:400, atk:45, color:'#3498db' }
+            warrior: { name:'战士', icon:'⚔️', cost:1, hp:400, atk:50, race:'warrior' },
+            mage: { name:'法师', icon:'🔮', cost:2, hp:250, atk:70, race:'mage' },
+            archer: { name:'弓箭', icon:'🏹', cost:2, hp:280, atk:60, race:'archer' },
+            rogue: { name:'盗贼', icon:'🗡️', cost:2, hp:300, atk:55, race:'rogue' },
+            healer: { name:'治疗', icon:'💊', cost:3, hp:200, atk:35, race:'healer' },
+            tank: { name:'守卫', icon:'🛡️', cost:1, hp:550, atk:35, race:'warrior' },
+            knight: { name:'骑士', icon:'🐴', cost:2, hp:400, atk:45, race:'human' },
+            human: { name:'人类', icon:'👤', cost:1, hp:350, atk:40, race:'human' }
+        };
+        
+        // 羁绊效果
+        const SYNERGIES = {
+            human: { 3: '+10%攻速, +10%伤害' },
+            warrior: { 3: '+25%护甲', 6: '+50%护甲' },
+            mage: { 2: '+20%技能伤害', 4: '+40%技能伤害' },
+            archer: { 2: '+15%攻速', 4: '+30%攻速' },
+            rogue: { 2: '+20%暴击', 4: '+40%暴击' },
+            healer: { 2: '每3秒+20HP' }
         };
         
         let board = [], gold = 10, round = 1, score = 0;
         let selected = null, shopItems = [], gameOver = false, inBattle = false;
+        let synergies = { human:0, warrior:0, mage:0, archer:0, rogue:0, healer:0 };
         
         function init() {
             board = Array(64).fill(null);
             gold = 10; round = 1; score = 0;
             gameOver = false; inBattle = false;
             selected = null;
+            synergies = { human:0, warrior:0, mage:0, archer:0, rogue:0, healer:0 };
             
             renderBoard();
             refreshShop();
             spawnEnemies(4);
             updateUI();
-            log('欢迎! 点击棋子再点蓝色区部署', 'info');
+            updateSynergies();
+            log('欢迎! 羁绊系统已实装!', 'win');
         }
         
         function renderBoard() {
             const el = document.getElementById('board');
             el.innerHTML = '';
-            
             for (let i = 0; i < 64; i++) {
                 const row = Math.floor(i / 8), col = i % 8;
                 const cell = document.createElement('div');
                 cell.className = `cell ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
-                if (i < 32) cell.classList.add('my-zone');
-                if (i >= 32) cell.classList.add('enemy-zone');
-                cell.style.position = 'relative';
                 cell.onclick = () => clickCell(i);
                 cell.id = `cell-${i}`;
                 
                 const p = board[i];
                 if (p) {
                     const piece = document.createElement('div');
-                    piece.className = `piece ${p.type}`;
+                    const type = PIECES[p.type].race;
+                    piece.className = `piece ${type}`;
                     piece.textContent = p.icon;
+                    
+                    // 如果触发羁绊则发光
+                    if (synergies[type] > 0) {
+                        const req = type === 'healer' ? 2 : 3;
+                        if (synergies[type] >= req) piece.classList.add('synergy-glow');
+                    }
                     
                     const hpBar = document.createElement('div');
                     hpBar.className = 'hp-bar';
-                    const hpPct = (p.hp / p.maxHp) * 100;
-                    let hpClass = '';
-                    if (hpPct < 30) hpClass = 'low';
-                    else if (hpPct < 60) hpClass = 'medium';
-                    hpBar.innerHTML = `<div class="hp ${hpClass}" style="width:${hpPct}%"></div>`;
+                    hpBar.innerHTML = `<div class="hp" style="width:${(p.hp/p.maxHp)*100}%"></div>`;
                     piece.appendChild(hpBar);
                     
                     if (p.level > 1) {
@@ -414,7 +256,6 @@
                         lv.textContent = p.level;
                         piece.appendChild(lv);
                     }
-                    
                     cell.appendChild(piece);
                 }
                 el.appendChild(cell);
@@ -425,13 +266,11 @@
             const el = document.getElementById('shop');
             el.innerHTML = '';
             shopItems = [];
-            
             const types = Object.keys(PIECES);
             for (let i = 0; i < 6; i++) {
                 const type = types[Math.floor(Math.random() * types.length)];
                 const data = PIECES[type];
                 shopItems.push({ type, ...data });
-                
                 const item = document.createElement('div');
                 item.className = 'shop-item';
                 item.innerHTML = `<div class="icon">${data.icon}</div><div class="name">${data.name}</div><div class="cost">💰${data.cost}</div>`;
@@ -444,285 +283,175 @@
             if (inBattle) return;
             const item = shopItems[index];
             if (gold < item.cost) { log('金币不足!', 'dmg'); return; }
-            
             document.querySelectorAll('.shop-item').forEach((el, i) => el.classList.toggle('selected', i === index));
             selected = { type: 'shop', index };
-            log(`选择 ${item.name}，点击蓝色区部署`, 'info');
         }
         
         function clickCell(index) {
             if (gameOver || inBattle) return;
-            
             const p = board[index];
             
             if (selected?.type === 'shop') {
                 if (index >= 32) { log('蓝色区部署!', 'dmg'); return; }
-                if (p) { log('已有棋子!', 'dmg'); return; }
-                
+                if (p) { log('已有!', 'dmg'); return; }
                 const item = shopItems[selected.index];
                 board[index] = { type: item.type, icon: item.icon, hp: item.hp, maxHp: item.hp, atk: item.atk, level: 1, isEnemy: false };
                 gold -= item.cost;
+                // 更新羁绊
+                const race = PIECES[item.type].race;
+                if (synergies[race] !== undefined) synergies[race]++;
                 renderBoard();
                 updateUI();
-                log(`部署 ${item.name}`, 'win');
+                updateSynergies();
+                log(`部署 ${item.name} [${race}]`, 'win');
                 selected = null;
                 document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
             } else if (p && !p.isEnemy) {
                 document.querySelectorAll('.cell').forEach(el => el.classList.remove('selected'));
                 document.getElementById(`cell-${index}`).classList.add('selected');
                 selected = { type: 'board', index };
-                log(`选中 ${PIECES[p.type].name} Lv.${p.level}`, 'info');
             }
         }
         
-        function sellPiece() {
-            if (selected?.type !== 'board') { log('先选中棋子', 'dmg'); return; }
-            const p = board[selected.index];
-            if (!p || p.isEnemy) return;
-            
-            const refund = Math.floor(PIECES[p.type].cost * p.level * 0.8);
-            gold += refund;
-            board[selected.index] = null;
-            selected = null;
-            
-            renderBoard();
-            updateUI();
-            log(`出售 +💰${refund}`, 'win');
+        function updateSynergies() {
+            for (const key in synergies) {
+                const el = document.getElementById(`syn-${key}`);
+                if (el) {
+                    const req = key === 'healer' ? 2 : 3;
+                    const active = synergies[key] >= req;
+                    el.textContent = `${key} ${synergies[key]}/${req}`;
+                    el.classList.toggle('active', active);
+                }
+            }
         }
         
         function startBattle() {
-            const myPieces = board.filter(p => p && !p.isEnemy);
-            if (myPieces.length === 0) { log('需要部署棋子!', 'dmg'); return; }
-            
+            const my = board.filter(p => p && !p.isEnemy);
+            if (my.length === 0) { log('部署棋子!', 'dmg'); return; }
             inBattle = true;
-            log('⚔️ 战斗开始!', 'win');
+            log('⚔️ 战斗!', 'win');
             battleLoop();
         }
         
         function battleLoop() {
             let ticks = 0;
-            
             const tick = () => {
                 if (gameOver) return;
                 ticks++;
-                
                 const pairs = [];
                 for (let i = 0; i < 64; i++) {
                     const a = board[i];
                     if (!a || a.isEnemy) continue;
-                    for (const n of getNeighbors(i)) {
+                    // 相邻敌人
+                    const neighbors = getNeighbors(i);
+                    for (const n of neighbors) {
                         const d = board[n];
                         if (d && d.isEnemy) pairs.push([i, n]);
                     }
                 }
-                
-                if (pairs.length === 0 || ticks >= 25) {
-                    inBattle = false;
-                    return;
-                }
+                if (pairs.length === 0 || ticks >= 25) { inBattle = false; return; }
                 
                 for (const [atkIdx, defIdx] of pairs) {
                     const attacker = board[atkIdx];
                     const defender = board[defIdx];
                     if (!attacker || !defender) continue;
                     
-                    // 攻击特效
-                    showSlashEffect(atkIdx);
-                    
-                    // 伤害
-                    const dmg = attacker.atk;
-                    defender.hp -= dmg;
-                    
-                    showDmg(defIdx, `-${dmg}`, 'crit');
-                    playSound('hit');
-                    
-                    log(`${PIECES[attacker.type].name} → ${PIECES[defender.type].name} ${dmg}`, 'dmg');
-                    
-                    // 治疗
-                    if (attacker.type === 'healer') {
-                        for (const ally of getNeighbors(atkIdx)) {
-                            if (board[ally] && !board[ally].isEnemy) {
-                                const heal = Math.floor(attacker.atk * 0.4);
-                                board[ally].hp = Math.min(board[ally].hp + heal, board[ally].maxHp);
-                                showDmg(atkIdx, `+${heal}`, 'heal');
-                                log(`${PIECES[attacker.type].name} 治疗 +${heal}`, 'heal');
-                            }
-                        }
+                    // 计算羁绊伤害加成
+                    let dmg = attacker.atk;
+                    const race = PIECES[attacker.type].race;
+                    if (synergies[race] >= 3 && (race === 'mage' || race === 'archer' || race === 'rogue')) {
+                        dmg = Math.floor(dmg * 1.2); // 20%加成
                     }
+                    
+                    defender.hp -= dmg;
+                    showDmg(defIdx, `-${dmg}`);
+                    log(`${PIECES[attacker.type].name}→${PIECES[defender.type].name} ${dmg}`, 'dmg');
                     
                     renderCell(atkIdx);
                     renderCell(defIdx);
                     
-                    // 死亡
                     if (defender.hp <= 0) {
                         if (defender.isEnemy) {
-                            showExplosion(defIdx);
                             score += defender.level * 10;
                             gold += defender.level * 2;
-                            log(`💀 击败 ${PIECES[defender.type].name}! +${defender.level * 2}💰`, 'win');
-                            playSound('kill');
+                            log(`💀 击杀 +${defender.level*2}💰`, 'win');
                         }
                         board[defIdx] = null;
                         renderCell(defIdx);
                     }
                 }
-                
                 updateUI();
                 
-                // 胜负
                 const my = board.filter(p => p && !p.isEnemy).length;
                 const en = board.filter(p => p && p.isEnemy).length;
-                
-                if (my === 0) { gameOver = true; showModal('失败'); playSound('lose'); }
+                if (my === 0) { gameOver = true; showModal('失败'); }
                 else if (en === 0) {
-                    setTimeout(() => {
-                        round++;
-                        gold += round * 2;
-                        log(`✅ 回合${round} +${round * 2}💰`, 'win');
-                        spawnEnemies(round + 2);
-                        updateUI();
-                    }, 800);
+                    setTimeout(() => { round++; gold += round*2; log(`回合${round} +${round*2}💰`, 'win'); spawnEnemies(round+2); updateUI(); }, 800);
                 }
             };
-            
-            const interval = setInterval(() => {
-                if (gameOver || !inBattle) { clearInterval(interval); return; }
-                tick();
-            }, 700);
+            const interval = setInterval(() => { if(gameOver||!inBattle){clearInterval(interval);return;} tick(); }, 700);
         }
         
         function spawnEnemies(count) {
             for (let i = 0; i < count; i++) {
                 let pos, tries = 0;
-                do { pos = 32 + Math.floor(Math.random() * 32); tries++; } while (board[pos] && tries < 20);
+                do { pos = 32 + Math.floor(Math.random()*32); tries++; } while(board[pos] && tries<20);
                 if (!board[pos]) {
                     const types = Object.keys(PIECES);
-                    const type = types[Math.floor(Math.random() * types.length)];
+                    const type = types[Math.floor(Math.random()*types.length)];
                     const data = PIECES[type];
-                    const level = Math.min(Math.ceil(round / 2), 3);
-                    board[pos] = { type, icon: data.icon, hp: data.hp * level, maxHp: data.hp * level, atk: data.atk * level, level, isEnemy: true };
+                    const level = Math.min(Math.ceil(round/2), 3);
+                    board[pos] = { type, icon:data.icon, hp:data.hp*level, maxHp:data.hp*level, atk:data.atk*level, level, isEnemy:true };
                 }
             }
             renderBoard();
         }
         
-        function getNeighbors(index) {
-            const row = Math.floor(index / 8), col = index % 8;
-            const cells = [];
-            for (let dr = -1; dr <= 1; dr++) {
-                for (let dc = -1; dc <= 1; dc++) {
-                    if (dr === 0 && dc === 0) continue;
-                    const nr = row + dr, nc = col + dc;
-                    if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) cells.push(nr * 8 + nc);
-                }
-            }
-            return cells;
+        function getNeighbors(i) {
+            const r = Math.floor(i/8), c = i%8, n = [];
+            for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){ if(dr==0&&dc==0)continue;
+                const nr=r+dr, nc=c+dc; if(nr>=0&&nr<8&&nc>=0&&nc<8) n.push(nr*8+nc); }
+            return n;
         }
         
-        function renderCell(index) {
-            const cell = document.getElementById(`cell-${index}`);
-            if (!cell) return;
-            cell.innerHTML = '';
-            const p = board[index];
-            if (p) {
+        function renderCell(i) {
+            const c = document.getElementById(`cell-${i}`);
+            if(!c) return;
+            c.innerHTML = '';
+            const p = board[i];
+            if(p) {
                 const piece = document.createElement('div');
-                piece.className = `piece ${p.type}`;
+                const race = PIECES[p.type].race;
+                piece.className = `piece ${race}`;
                 piece.textContent = p.icon;
-                
-                const hpBar = document.createElement('div');
-                hpBar.className = 'hp-bar';
-                const hpPct = (p.hp / p.maxHp) * 100;
-                let hpClass = hpPct < 30 ? 'low' : hpPct < 60 ? 'medium' : '';
-                hpBar.innerHTML = `<div class="hp ${hpClass}" style="width:${hpPct}%"></div>`;
-                piece.appendChild(hpBar);
-                
-                if (p.level > 1) {
-                    const lv = document.createElement('div');
-                    lv.className = 'level-badge';
-                    lv.textContent = p.level;
-                    piece.appendChild(lv);
-                }
-                cell.appendChild(piece);
+                if(synergies[race] >= (race==='healer'?2:3)) piece.classList.add('synergy-glow');
+                const hp = document.createElement('div'); hp.className='hp-bar';
+                hp.innerHTML = `<div class="hp" style="width:${(p.hp/p.maxHp)*100}%"></div>`;
+                piece.appendChild(hp);
+                if(p.level>1){ const lv=document.createElement('div'); lv.className='level-badge'; lv.textContent=p.level; piece.appendChild(lv); }
+                c.appendChild(piece);
             }
         }
         
-        function showDmg(index, text, type) {
-            const cell = document.getElementById(`cell-${index}`);
-            if (!cell) return;
-            const el = document.createElement('div');
-            el.className = `dmg-num ${type}`;
-            el.textContent = text;
-            cell.appendChild(el);
-            setTimeout(() => el.remove(), 800);
+        function showDmg(i, txt) {
+            const c = document.getElementById(`cell-${i}`);
+            if(!c) return;
+            const e = document.createElement('div');
+            e.className = 'dmg-num'; e.textContent = txt;
+            c.appendChild(e);
+            setTimeout(()=>e.remove(), 800);
         }
         
-        function showSlashEffect(index) {
-            const cell = document.getElementById(`cell-${index}`);
-            if (!cell) return;
-            const el = document.createElement('div');
-            el.className = 'slash-effect';
-            el.textContent = '💥';
-            cell.appendChild(el);
-            setTimeout(() => el.remove(), 300);
+        function updateUI() { document.getElementById('gold').textContent=gold; document.getElementById('round').textContent=round; document.getElementById('score').textContent=score; }
+        
+        function log(m, t='') {
+            const l = document.getElementById('log');
+            l.insertBefore(Object.assign(document.createElement('div'),{className:`log ${t}`,textContent:m}),l.firstChild);
+            while(l.children.length>6)l.removeChild(l.lastChild);
         }
         
-        function showExplosion(index) {
-            const cell = document.getElementById(`cell-${index}`);
-            if (!cell) return;
-            const el = document.createElement('div');
-            el.className = 'explosion';
-            cell.appendChild(el);
-            setTimeout(() => el.remove(), 400);
-        }
-        
-        function playSound(type) {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
-                if (type === 'hit') {
-                    osc.frequency.value = 200;
-                    gain.gain.value = 0.1;
-                } else if (type === 'kill') {
-                    osc.frequency.value = 400;
-                    gain.gain.value = 0.15;
-                } else if (type === 'lose') {
-                    osc.frequency.value = 150;
-                    gain.gain.value = 0.2;
-                }
-                
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-                osc.stop(ctx.currentTime + 0.2);
-            } catch(e) {}
-        }
-        
-        function updateUI() {
-            document.getElementById('gold').textContent = gold;
-            document.getElementById('round').textContent = round;
-            document.getElementById('score').textContent = score;
-        }
-        
-        function log(msg, type = '') {
-            const el = document.getElementById('log');
-            el.insertBefore(Object.assign(document.createElement('div'), {className: `log ${type}`, textContent: msg}), el.firstChild);
-            while (el.children.length > 8) el.removeChild(el.lastChild);
-        }
-        
-        function showModal(msg) {
-            document.getElementById('modal-title').textContent = msg;
-            document.getElementById('modal-score').textContent = score;
-            document.getElementById('modal').classList.remove('hidden');
-        }
-        
-        function restart() {
-            document.getElementById('modal').classList.add('hidden');
-            document.getElementById('log').innerHTML = '';
-            init();
-        }
+        function showModal(t) { document.getElementById('modal-title').textContent=t; document.getElementById('modal-score').textContent=score; document.getElementById('modal').classList.remove('hidden'); }
+        function restart() { document.getElementById('modal').classList.add('hidden'); document.getElementById('log').innerHTML=''; init(); }
         
         init();
     </script>
